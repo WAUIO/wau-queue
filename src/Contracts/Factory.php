@@ -12,5 +12,5 @@ interface Factory {
 	 * @param  string  $name
 	 * @return \Illuminate\Contracts\Queue\Queue
 	 */
-	public function connection($name = null);
+	public function connection();
 }

@@ -47,7 +47,7 @@ class RabbitMQConnnector implements ConnectorInterface, Factory{
                 $config['port'],
                 $config['login'],
                 $config['password'],
-                $config['vhost']
+                isset($config['vhost']) ? $config['vhost'] : null
             );
         } 
     }

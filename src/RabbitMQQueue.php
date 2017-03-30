@@ -5,8 +5,6 @@ use WAUQueue\Queue;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Wire\AMQPTable;
-use WAUQueue\Jobs\RabbitMQJob;
-use App\Brokers\MailProducer;
 
 /**
  * Description of RabbitMQQueue
@@ -55,9 +53,9 @@ class RabbitMQQueue extends Queue{
         $this->connection = $amqpConnection;
         $this->defaultQueue = $config['queue'];
         $this->configQueue = $config['queue_params'];
-        $this->configExchange = $config['exchange_params'];
-        $this->declareExchange = $this->setAttribute($config['exchange_declare']);
-        $this->declareBindQueue = $this->setAttribute($config['queue_declare_bind']);
+        $this->configExchange = isset($config['exchange_params']) ? $config['exchange_params'] : [];
+        $this->declareExchange = isset($config['exchange_declare']) ? $config['exchange_declare'] : false;
+        $this->declareBindQueue = isset($config['queue_declare_bind']) ? $config['queue_declare_bind'] : false;
         $this->sleepOnError = isset($config['sleep_on_error']) ? $config['sleep_on_error'] : 5;
         $this->channel = $this->getChannel();
     }
@@ -88,7 +86,7 @@ class RabbitMQQueue extends Queue{
      * @param array $options
      * @return mixed
      */
-    public function pushRaw($payload, $data = '', $queue = null, $options = array())
+    public function pushRaw($payload, $queue = null, $options = array())
     {
         try {
             $queue = $this->getQueueName($queue);
@@ -99,23 +97,39 @@ class RabbitMQQueue extends Queue{
                 list($queue, $exchange) = $this->declareQueue($queue);
             }
             
-            $headers = [
-                'Content-Type'  => 'application/json',
-                'delivery_mode' => 2,
-            ];
-            if (isset($this->retryAfter) === true) {
-                $headers['application_headers'] = [self::ATTEMPT_COUNT_HEADERS_KEY => ['I', $this->retryAfter]];
-            }
+            $this->send($payload, $queue, $exchange);
+//            $headers = [
+//                'Content-Type'  => 'application/json',
+//                'delivery_mode' => 2,
+//            ];
+//            if (isset($this->retryAfter) === true) {
+//                $headers['application_headers'] = [self::ATTEMPT_COUNT_HEADERS_KEY => ['I', $this->retryAfter]];
+//            }
+//            
+//            $this->addPriority($options, $headers);
+//            // push job to a queue
+//            $message = new AMQPMessage($payload, $headers);
+//            // push task to a queue
+//            $this->channel->basic_publish($message, $exchange, $queue);
             
-            $this->addPriority($options, $headers);
-            // push job to a queue
-            $message = new AMQPMessage($payload, $headers);
-            // push task to a queue
-            $this->channel->basic_publish($message, $exchange, $queue);
+            $this->channel->close();
+            $this->connection->close();
         } catch (\Exception $exception) {
             // @Todo : set log error to file or something else;
             var_dump($exception->getMessage());
         }
+    }
+    
+    private function send($data, $queue = '', $exchange = '') {
+        $priority = rand(1,9);
+        $msg = new AMQPMessage($data, array(
+            'delivery_mode' => 2,
+            'priority' => $priority,
+            'timestamp' => time(),
+    //        'expiration' => strval(1000 * (strtotime('+1 day midnight') - time() - 1))
+        ));
+
+        $this->channel->basic_publish($msg, $exchange, $queue);
     }
     
     /**
@@ -158,6 +172,7 @@ class RabbitMQQueue extends Queue{
     {
         return $this->connection->channel();
     }
+    
     /**
      * @param $name
      *
@@ -179,14 +194,16 @@ class RabbitMQQueue extends Queue{
             $this->declaredExchanges[] = $exchange;
         }
         if ($this->declareBindQueue && !in_array($name, $this->declaredQueues)) {
-            
+            $params = $this->setPriorityParams($this->configQueue, $this->configQueue);
             // declare queue
             $this->channel->queue_declare(
                 $name,
                 $this->configQueue['passive'],
                 $this->configQueue['durable'],
                 $this->configQueue['exclusive'],
-                $this->configQueue['auto_delete']
+                $this->configQueue['auto_delete'],
+                false,
+                new AMQPTable($params)
             );
             
             // bind queue to the exchange
@@ -246,28 +263,10 @@ class RabbitMQQueue extends Queue{
         }
     }
     
-    public function initProcess() {
-        $callback = function($message) {
-            die('here');
-            echo "call back". PHP_EOL;
-    //        $provider = (new MailProducer())->makeSender('sms');
-    //        $provider->send($message->body, "+261341611188");
-            sleep(1);
-            $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
-        };
-//        var_dump($this->defaultQueue); die; 
-        $this->channel->queue_bind($this->defaultQueue, 'sms', $this->defaultQueue);
-        $this->channel->basic_consume(
-                $this->defaultQueue, 
-                '', 
-                false, 
-                false, 
-                false, 
-                false, 
-                $callback, 
-                null, 
-                array()
-//                array('x-priority' => array('I', 9))
-                );
+    private function setPriorityParams($params = [] , $configs) {
+        if (isset($configs['priority'])) {
+            $params['x-max-pririty'] = $configs['priority'];
+        }
+        return $params;
     }
 }

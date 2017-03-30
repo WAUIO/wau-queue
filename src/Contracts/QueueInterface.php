@@ -26,12 +26,11 @@ interface QueueInterface {
      * Push a new raw onto the queue.
      * 
      * @param string $payload
-     * @param mixed $data
      * @param string $queue
      * @param array $options
      * @return mixed
      */
-    public function pushRaw($payload, $data = '', $queue = null, $options = array() );
+    public function pushRaw($payload, $queue = null, $options = array() );
 
 }
 
