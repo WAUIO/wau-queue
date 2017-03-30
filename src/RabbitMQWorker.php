@@ -33,6 +33,7 @@ class RabbitMQWorker implements IWorker {
         }
         
         $callback = function($message) {
+            echo "Sent  : {$message->body} ".PHP_EOL;
             // @todo : Make factory method to create a new Job 
             // and fire Job::fire() to do the Job.
             // Implement WAUQueue\Contract\Job for Different Job
@@ -56,6 +57,8 @@ class RabbitMQWorker implements IWorker {
         while(true) {
             $channel->wait();
         }
+        $channel->closse();
+        $this->connection->close();
 	}
     
     public function runProcess() {
