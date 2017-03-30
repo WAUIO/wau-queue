@@ -9,6 +9,8 @@ $dotenv = new Dotenv(__DIR__);
 
 $queue = 'test';
 $configs = require dirname(__FILE__) .'/ampq.php';
+$configs['exchange_declare']  = 'sms';
+$conigs['queue_declare_bind' ] = 'sms';
 $connect = new RabbitMQConnnector();
 $channel = $connect->connect($configs);
 
