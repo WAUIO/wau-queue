@@ -2,42 +2,99 @@
 namespace WAUQueue;
 
 use WAUQueue\Contracts\IWorker;
-use WAUQueue\Connectors\RabbitMQConnnector;
+use WAUQueue\Connectors\RabbitMQWorkerConnector as Connector;
+use WAUQueue\RabbitMQQueue;
 
 class RabbitMQWorker implements IWorker {
     
     private $connection;
     
-    public function __construct() {
-        $this->connection = RabbitMQConnnector::$queue;
+    private $queue;
+    
+    public function __construct($configs) {
+        $con = new Connector();
+        $con->connect($configs);
+        $this->connection = $con->connection();
+        $this->queue = new RabbitMQQueue($this->connection, $configs);
     }
     
-    /**
-	 * Listen to the given queue connection.
-	 *
-	 * @param  string  $connectionName
-	 * @param  string  $queue
-	 * @param  string  $delay
-	 * @param  string  $memory
-	 * @param  int     $timeout
-	 * @return void
-	 */
-	public function listen($connectionName, $queue = null, $delay = 0, $memory = 128, $sleep = 3, $maxTries = 0)
+	/**
+     * Listen to the given queue connection.
+     * 
+     * @param string $queue
+     * @param array $options
+     * @param integer $delay
+     * @param integer $memory
+     * @param integer $sleep
+     * @param integer $maxTries
+     */
+    public function listen($queue = null, $options = array(), $delay = 0, $memory = 128, $sleep = 3, $maxTries = 0 )
 	{
-        $this->connection->initProcess();
-        while(true) {
-            sleep(1);
-            
-            $this->connection->pop($queue);
-//            $this->connection->getChannel()->wait();
+        try  {
+            $this->queue->declareQueue($queue);
+            $this->bindQueue($queue, $options);
+            $this->lockMessage();
+            $channel = $this->connection->channel();
+            $channel->basic_consume(
+                    $queue, 
+                    '', 
+                    false, 
+                    false, 
+                    false, 
+                    false, 
+                    $this->runProcess(), 
+                    null, 
+                    array('x-priority' => array('I', 9))
+                );
+
+            while(count($channel->callbacks)) {
+                $channel->wait();
+            }
+            $channel->closse();
+            $this->connection->close();
+        } catch (Exception $e) {
+            //reconnect on exception
+            echo "Exception handled, reconnecting...\nDetail:\n".$e.PHP_EOL;
+            if ($this->connection != null) {
+                try {
+                    $this->connection->close();
+                } catch (Exception $e1) {}
+            }
+            sleep(5);
         }
 	}
     
-    public function runProcess() {
-        
+    /**
+    * don't dispatch a new message to a worker until it has processed and 
+    * acknowledged the previous one. Instead, it will dispatch it to the 
+    * next worker that is not still busy.
+    */
+    private function lockMessage() {
+        $channel =  $this->connection->channel();
+        $channel->basic_qos(
+            null,   #prefetch size - prefetch window size in octets, null meaning "no specific limit"
+            1,      #prefetch count - prefetch window in terms of whole messages
+            null    #global - global=null to mean that the QoS settings should apply per-consumer, global=true to mean that the QoS settings should apply per-channel
+        );
     }
     
-    public function makeProcess() {
-        
+    public function runProcess() {
+        return function($message) {
+            echo "Sent  : {$message->body} ".PHP_EOL;
+            // @todo : Make factory method to create a new Job 
+            // and fire Job::fire() to do the Job.
+            // Implement WAUQueue\Contract\Job for Different Job
+//            $provider = (new MailProducer())->makeSender('sms');
+//            $provider->fire();
+            
+            // Ack the message to the queue (delete it)
+            $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+        };
+    }
+    
+    public function bindQueue($queue, $options) {
+        if (isset($options['binding_queue_route']) && isset($options['exchange'])) {
+            $this->connection->channel()->queue_bind($queue, $options['exchange'], $options['binding_queue']);
+        }
     }
 }
