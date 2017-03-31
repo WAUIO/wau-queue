@@ -14,7 +14,7 @@ $configs['queue_declare_bind' ] = 'sms';
 //$channel = $connect->connect($configs);
 
 $worker = new WAUQueue\RabbitMQWorker($configs);
-$worker->listen('rabbitmq', $queue, $delay = 0, 128, 3, 0, [
+$worker->listen($queue, $delay = 0, 128, 3, 0, [
     'binding_queue' => 'test',
     'exchange'      => 'sms'
 ]);
