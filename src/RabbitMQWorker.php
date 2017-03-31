@@ -4,6 +4,8 @@ namespace WAUQueue;
 use WAUQueue\Contracts\IWorker;
 use WAUQueue\Connectors\RabbitMQWorkerConnector as Connector;
 use WAUQueue\RabbitMQQueue;
+use League\Pipeline\Pipeline;
+use WAUQueue\Contracts\AbstractStagePipeline;
 
 class RabbitMQWorker implements IWorker {
     
@@ -11,11 +13,18 @@ class RabbitMQWorker implements IWorker {
     
     private $queue;
     
-    public function __construct($configs) {
+    /**
+     * Item to chech for the pipeline
+     * @var array
+     */
+    private $handlers;
+    
+    public function __construct($configs, $handlers = array()) {
         $con = new Connector();
         $con->connect($configs);
         $this->connection = $con->connection();
         $this->queue = new RabbitMQQueue($this->connection, $configs);
+        $this->handlers = $handlers;
     }
     
 	/**
@@ -48,9 +57,12 @@ class RabbitMQWorker implements IWorker {
                 );
 
             while(count($channel->callbacks)) {
-                $channel->wait();
+                $pipeline = $this->attachPipeline();
+                if($pipeline->process(true)) {
+                    $channel->wait();
+                }
             }
-            $channel->closse();
+            $channel->close();
             $this->connection->close();
         } catch (Exception $e) {
             //reconnect on exception
@@ -78,6 +90,11 @@ class RabbitMQWorker implements IWorker {
         );
     }
     
+    /**
+     * Callback for the channel 
+     *
+     * @return function
+     */
     public function runProcess() {
         return function($message) {
             echo "Sent  : {$message->body} ".PHP_EOL;
@@ -92,9 +109,30 @@ class RabbitMQWorker implements IWorker {
         };
     }
     
+    /**
+     * Bind queue
+     *
+     * @param string $queue
+     * @param array $options
+     */
     public function bindQueue($queue, $options) {
         if (isset($options['binding_queue_route']) && isset($options['exchange'])) {
             $this->connection->channel()->queue_bind($queue, $options['exchange'], $options['binding_queue']);
         }
+    }
+    
+    /**
+     * Attach the handlers to the pipeline
+     * 
+     * @return Pipeline;
+     */
+    private function attachPipeline() {
+        $pipeline = new Pipeline();
+        foreach ($this->handlers as $stagePipeline) {
+            if ($pipeline instanceof AbstractStagePipeline ) {
+                $pipeline = $pipeline->pipe($stagePipeline);
+            }
+        }
+        return $pipeline;
     }
 }

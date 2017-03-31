@@ -2,9 +2,7 @@
 require_once dirname(dirname(dirname(__FILE__))) .'/vendor/autoload.php';
 
 use WAUQueue\Connectors\RabbitMQConnnector;
-use Dotenv\Dotenv;
 
-$dotenv = new Dotenv(__DIR__);
 
 $configs = require dirname(__FILE__) .'/ampq.php';
 $configs['exchange_declare']  = 'texts';
