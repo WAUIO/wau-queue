@@ -31,18 +31,18 @@ class RabbitMQConnnector implements ConnectorInterface, Factory{
     {
         $this->setAMQPSStreamConnection($config);
         $this->setQueue($config);
-        return self::$queue;
+        return static::$queue;
     }
     
-    public function connection()
+    public function connection($name = null)
     {
-        return $this->connection;
+        return static::$connection;
     }
     
     private function setAMQPSStreamConnection ($config) {
-        if (is_null(self::$connection)) {
+        if (is_null(static::$connection)) {
             // create connection witsh AMQP
-            self::$connection = new AMQPStreamConnection(
+            static::$connection = new AMQPStreamConnection(
                 $config['host'],
                 $config['port'],
                 $config['login'],
@@ -53,9 +53,9 @@ class RabbitMQConnnector implements ConnectorInterface, Factory{
     }
     
     private function setQueue($config) {
-        if(is_null(self::$queue)) {
-            self::$queue = new RabbitMQQueue(
-                self::$connection,
+        if(is_null(static::$queue)) {
+            static::$queue = new RabbitMQQueue(
+                static::$connection,
                 $config
             );
         }
