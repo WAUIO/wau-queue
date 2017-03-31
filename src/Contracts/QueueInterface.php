@@ -10,9 +10,10 @@ interface QueueInterface {
 	 * @param  string  $job
 	 * @param  mixed   $data
 	 * @param  string  $queue
+	 * @param  array   $options
 	 * @return mixed
 	 */
-	public function push($job, $data = '', $queue = null);
+	public function push($job, $data = '', $queue = null, $options = array());
 
 	/**
 	 * Pop the next job off of the queue.

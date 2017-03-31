@@ -19,9 +19,8 @@ return [
     'exchange_params' => array(
         'type' => 'direct',
         'passive' => false,
-        'durable' => false,
+        'durable' => true, // Do not lose message even if the server crashed
         'auto_delete' => false,
-        'name' => 'email'
     ),
 ];
 
