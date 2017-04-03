@@ -6,8 +6,11 @@ use WAUQueue\Connectors\RabbitMQWorkerConnector as Connector;
 use WAUQueue\RabbitMQQueue;
 use League\Pipeline\Pipeline;
 use WAUQueue\Contracts\AbstractStagePipeline;
+use WAUQueue\Contracts\Job\JobMaker;
 
 class RabbitMQWorker implements IWorker {
+    
+    use Helpers\PayloadTrait;
     
     private $connection;
     
@@ -97,15 +100,17 @@ class RabbitMQWorker implements IWorker {
      */
     public function runProcess() {
         return function($message) {
-            echo "Sent  : {$message->body} ".PHP_EOL;
-            // @todo : Make factory method to create a new Job 
-            // and fire Job::fire() to do the Job.
-            // Implement WAUQueue\Contract\Job for Different Job
-//            $provider = (new MailProducer())->makeSender('sms');
-//            $provider->fire();
-            
-            // Ack the message to the queue (delete it)
-            $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+            $payload = $this->unserializePayload($message->body);
+            $jobMaker = (new JobMaker())->makeJob($payload->job);
+            if (!is_null($jobMaker)) {
+                if($jobMaker->fire($payload->job, $payload->data)) {
+                    // Ack the message to the queue (delete it)
+                    $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+                }
+            } else {
+                // @todo: requeue the message
+                echo "/!\ Item not consumed. There are no Job to consume the item.".PHP_EOL;
+            }
         };
     }
     

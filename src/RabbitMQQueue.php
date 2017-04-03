@@ -168,7 +168,7 @@ class RabbitMQQueue extends Queue{
     }
     
     /**
-     * @return AMQPChannel
+     * @return \PhpAmqpLib\Channel\AMQPChannel
      */
     public function getChannel()
     {

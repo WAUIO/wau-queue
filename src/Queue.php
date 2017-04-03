@@ -30,7 +30,7 @@ abstract class Queue implements QueueInterface {
             // @todo : set the right job call
 			return json_encode([
 				'job' => 'WAUQueue\Queue\CallQueuedHandler@call',
-				'data' => ['command' => serialize(clone $job)],
+				'data' => ['command' => serialize($job)],
 			]);
 		}
 

@@ -1,6 +1,4 @@
-<?php
-
-namespace WAUQueue;
+<?php namespace WAUQueue;
 
 use DateTimeInterface;
 
@@ -9,13 +7,13 @@ trait InteractsWithTime
     /**
      * Get the number of seconds until the given DateTime.
      *
-     * @param  \DateTimeInterface  $delay
+     * @param  \DateTimeInterface $delay
+     *
      * @return int
      */
-    protected function secondsUntil($delay)
-    {
-        return $delay instanceof DateTimeInterface
-                            ? max(0, $delay->getTimestamp() - $this->currentTime())
-                            : (int) $delay;
+    protected function secondsUntil($delay) {
+        return $delay instanceof DateTimeInterface ? max(0,
+            $delay->getTimestamp() - $this->currentTime()
+        ) : (int)$delay;
     }
 }
