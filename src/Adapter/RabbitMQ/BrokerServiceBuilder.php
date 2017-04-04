@@ -1,6 +1,7 @@
 <?php namespace WAUQueue\Adapter\RabbitMQ;
 
 
+use PhpAmqpLib\Message\AMQPMessage;
 use WAUQueue\Adapter\RabbitMQ\Exchange\BasicExchange;
 use WAUQueue\Contracts\ClosableInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
@@ -31,8 +32,27 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
      */
     protected $queue;
     
-    public function receive(MessageInterface $message) {
-        // TODO: Implement receive() method.
+    /**
+     * @inheritdoc
+     */
+    public function pull(MessageInterface $message) {
+        // build the concrete message
+        $concreteMessage = new AMQPMessage(
+            $message->raw(),
+            $message->getHeaders()
+        );
+        
+        $config = $message->getConfig();
+        
+        $exchange = is_null($this->exchange) ? '' : $this->exchange->prop('name');
+        
+        // send the message to the broker, precisely to exchange
+        $this->channel()->get()->basic_publish($concreteMessage, $exchange,
+            $this->array_get($config, 'routing'),
+            $this->array_get($config, 'mandatory', false),
+            $this->array_get($config, 'immediate', false),
+            $this->array_get($config, 'ticket')
+        );
     }
     
     /**
@@ -104,7 +124,7 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
             }));
         }
         
-        return !empty($queueSet) ? $queueSet['object'] : new Queue\AutoQueue($this->channel(), []);
+        return !empty($queueSet) ? $queueSet['object'] : new Queue\RandomQueue($this->channel(), []);
         */
         
         return $this->queue;

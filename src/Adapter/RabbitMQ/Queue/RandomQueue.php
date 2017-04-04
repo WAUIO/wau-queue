@@ -1,17 +1,9 @@
-<?php
-/**
- * Created by PhpStorm.
- * User: Iz
- * Date: 04/04/2017
- * Time: 15:41
- */
-
-namespace WAUQueue\Adapter\RabbitMQ\Queue;
+<?php namespace WAUQueue\Adapter\RabbitMQ\Queue;
 
 
 use WAUQueue\Adapter\RabbitMQ\Channel;
 
-class AutoQueue extends NamedQueue
+class RandomQueue extends NamedQueue
 {
     
     protected $autoCreated = true;

@@ -10,7 +10,7 @@ interface BrokerInterface
      *
      * @return mixed
      */
-    public function receive(MessageInterface $message);
+    public function pull(MessageInterface $message);
     
     /**
      * Get a specific queue object in the broker

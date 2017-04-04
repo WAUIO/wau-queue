@@ -17,13 +17,6 @@ class Connector implements ConnectorInterface, ClosableInterface
     use PropertiesTrait;
     
     /**
-     * Config parameters
-     *
-     * @var array
-     */
-    protected $properties = array();
-    
-    /**
      * Connection Stream
      *
      * @var AMQPStreamConnection
