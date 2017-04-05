@@ -20,4 +20,11 @@ interface BrokerInterface
      * @return null|\WAUQueue\Contracts\Message\QueueInterface
      */
     public function getQueue($name = null);
+    
+    /**
+     * Get all declared queues on one open broker
+     *
+     * @return array
+     */
+    public function getQueues();
 }

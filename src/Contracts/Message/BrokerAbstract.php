@@ -2,6 +2,8 @@
 
 
 use WAUQueue\Connectors\ConnectorInterface;
+use WAUQueue\Helpers\PropertiesTrait;
+use WAUQueue\Helpers\Utilities;
 
 /**
  * Class BrokerAbstract
@@ -10,15 +12,18 @@ use WAUQueue\Connectors\ConnectorInterface;
  */
 abstract class BrokerAbstract
 {
+    use Utilities, PropertiesTrait;
+    
     /**
      * @var ConnectorInterface
      */
     protected $connector;
     
-    protected $channel;
-    
-    public function __construct(ConnectorInterface $connector) {
-        $this->connector = $connector;
+    public function __construct(ConnectorInterface $connector, $options = array()) {
+        $this->connector  = $connector;
+        $this->properties = array_merge(array(
+            'accept-multi-queues' => true
+        ), $options);
     }
     
     /**
@@ -30,5 +35,16 @@ abstract class BrokerAbstract
         }
         
         return $this->connector;
+    }
+    
+    /**
+     * Retrieve option by key
+     *
+     * @param $key
+     *
+     * @return null
+     */
+    public function option($key) {
+        return $this->prop($key);
     }
 }

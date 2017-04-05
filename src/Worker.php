@@ -5,6 +5,7 @@ use WAUQueue\Contracts\Client\WorkerInterface;
 use WAUQueue\Contracts\Message\BrokerInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\ObservableInterface;
+use WAUQueue\Helpers\CollectionSet;
 use WAUQueue\Helpers\PropertiesTrait;
 
 /**
@@ -24,9 +25,11 @@ class Worker implements WorkerInterface
     protected $broker;
     
     /**
-     * @var QueueInterface
+     * QueueInterface set of all declared ones
+     *
+     * @var CollectionSet
      */
-    protected $queue;
+    protected $queues;
     
     /**
      * @var callable
@@ -35,7 +38,7 @@ class Worker implements WorkerInterface
     
     public function __construct(BrokerInterface $broker) {
         $this->broker = $broker;
-        $this->queue  = $broker->getQueue();
+        $this->queues = new CollectionSet($broker->getQueues());
     }
     
     /**
@@ -89,9 +92,9 @@ class Worker implements WorkerInterface
     }
     
     /**
-     * @return null|QueueInterface
+     * @return CollectionSet
      */
-    public function getQueue(){
-        return $this->queue;
+    public function getQueues() {
+        return $this->queues;
     }
 }

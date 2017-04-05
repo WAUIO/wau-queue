@@ -20,6 +20,18 @@ $bus->bind($exchange,
     ]), $severities
 );
 
+$bus->bind($exchange,
+    new RandomQueue($bus->channel(), [
+        'passive'     => false,
+        'durable'     => true,
+        'exclusive'   => false,
+        'auto_delete' => true,
+        'arguments'   => new AMQPTable(array(
+            'x-max-priority' => 10
+        )),
+    ]), ['info', 'warning', 'error']
+);
+
 $worker = new Worker($bus);
 $worker->setCallback(function(AMQPMessage $message) {
     sleep(rand(0, 3));

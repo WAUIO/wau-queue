@@ -10,13 +10,10 @@ use WAUQueue\Contracts\Message\BrokerInterface;
 use WAUQueue\Contracts\Message\MessageInterface;
 use WAUQueue\Contracts\ObservableInterface;
 use WAUQueue\Exception\ConcurrentQueueError;
-use WAUQueue\Helpers\Utilities;
 use WAUQueue\Worker;
 
 class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, ObservableInterface, ClosableInterface
 {
-    use Utilities;
-    
     /**
      * @var ObservableInterface
      */
@@ -31,6 +28,18 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
      * @var QueueInterface
      */
     protected $queue;
+    
+    /**
+     * Set of QueueInterface, as associative array
+     *  {
+     *      "queue-1" => QueueInterface,
+     *      "queue-2" => QueueInterface,
+     *      ...
+     *  }
+     *
+     * @var array
+     */
+    protected $queues;
     
     /**
      * @inheritdoc
@@ -74,13 +83,14 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
      * @return QueueInterface
      */
     public function setQueue(QueueInterface $queue) {
-        if(!is_null($this->queue)) {
+        if(!is_null($this->queue) && !$this->option('accept-multi-queues')) {
             // todo: delete the current one and replace it with this one
             // for new just let's throw an exception
             throw new ConcurrentQueueError("A queue is already set for this worker, name = \"{$this->queue->getName()}\"");
         }
         
         $this->queue = $queue;
+        $this->queues[$queue->getName()] = $queue;
         
         return $queue;
     }
@@ -115,19 +125,22 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
      * @return QueueInterface
      */
     public function getQueue($name = null) {
-        /* todo: for several set of queue
         if(is_null($name)) {
             $queueSet = end($this->queues);
         } else {
-            $queueSet = array_values(array_filter($this->queues, function($set) use($name){
-                return $set['name'] == $name;
-            }));
+            $queueSet = $this->array_get($this->queues, $name, null);
         }
         
-        return !empty($queueSet) ? $queueSet['object'] : new Queue\RandomQueue($this->channel(), []);
-        */
-        
-        return $this->queue;
+        return !empty($queueSet) ? $queueSet['object'] : $this->setQueue(new Queue\RandomQueue($this->channel(), []));
+    }
+    
+    /**
+     * Get all queues declared in the current broker
+     *
+     * @return array
+     */
+    public function getQueues() {
+        return $this->queues;
     }
     
     /**

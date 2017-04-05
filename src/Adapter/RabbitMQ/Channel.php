@@ -4,6 +4,7 @@
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Channel\AMQPChannel;
 use WAUQueue\Contracts\ClosableInterface;
+use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\ObservableInterface;
 use WAUQueue\Worker;
 
@@ -65,16 +66,18 @@ class Channel implements ObservableInterface, ClosableInterface
         
         $worker->behave($this);
         
-        $channel->basic_consume($worker->getQueue()->getName(),
-            $worker->prop('consumer_tag', ''),
-            $worker->prop('no_local', false),
-            $worker->prop('no_ack', false),
-            $worker->prop('exclusive', false),
-            $worker->prop('nowait', false),
-            $worker->getCallback(),
-            $worker->prop('ticket'),
-            $worker->prop('arguments')
-        );
+        $worker->getQueues()->each(function(QueueInterface $queue, $name, AMQPChannel $channel) use($worker){
+            $channel->basic_consume($name,
+                $worker->prop('consumer_tag', ''),
+                $worker->prop('no_local', false),
+                $worker->prop('no_ack', false),
+                $worker->prop('exclusive', false),
+                $worker->prop('nowait', false),
+                $worker->getCallback(),
+                $worker->prop('ticket'),
+                $worker->prop('arguments')
+            );
+        }, $channel);
         
         while(count($channel->callbacks)) {
             $channel->wait();
