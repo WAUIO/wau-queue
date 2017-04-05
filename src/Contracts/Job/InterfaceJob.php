@@ -1,14 +1,16 @@
 <?php
 namespace WAUQueue\Contracts\Job;
 
+use PhpAmqpLib\Message\AMQPMessage;
+
 interface InterfaceJob {
 
     /**
 	 * Fire the job.
 	 *
-     * @param mixed $job Job name
-     * @param array $data The data stored
+     * @param mixed|AMQPMessage $message
+     *
 	 * @return boolean
 	 */
-	public function fire($job, $data);
+	public function fire($message);
 }

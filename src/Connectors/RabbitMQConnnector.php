@@ -8,6 +8,9 @@ use WAUQueue\Contracts\Factory;
 /**
  * Description of RabbitMQConnnector
  *
+ * @deprecated
+ * (No more in use on 2.x)
+ *
  * @author Andrianina OELIMAHEFASON
  */
 class RabbitMQConnnector implements ConnectorInterface, Factory{

@@ -3,7 +3,10 @@ namespace WAUQueue\Contracts;
 
 /**
  * Define A strategy for the worker of the Queue
- * 
+ *
+ * @deprecated
+ * (No more in use on 2.x but should consider the parameters to implement it in another way)
+ *
  * @author Andrianina OELIMAHEFASON
  */
 interface IWorker {

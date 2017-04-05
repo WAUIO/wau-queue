@@ -9,11 +9,14 @@ use PhpAmqpLib\Wire\AMQPTable;
 /**
  * Description of RabbitMQQueue
  *
+ * @deprecated
+ * (No more in use from 2.x)
+ *
  * @author Andrianina OELIMAHEFASON
  */
 class RabbitMQQueue extends Queue{
     
-    use InteractsWithTime;
+    use Helpers\InteractsWithTime;
     use Helpers\RabbitMQHelpers;
     /**
      * Used for retry logic, to set the retries on the message metadata instead of the message body.

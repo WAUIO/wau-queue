@@ -8,7 +8,7 @@ namespace WAUQueue\Contracts;
 interface Factory {
     /**
 	 * Resolve a queue connection instance.
-	 *
+     *
 	 * @param  string  $name
 	 * @return \Illuminate\Contracts\Queue\Queue
 	 */

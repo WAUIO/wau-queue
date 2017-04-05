@@ -8,6 +8,9 @@ use WAUQueue\Jobs\DefaultJob;
 /**
  * Description of JobMaker
  *
+ * @deprecated
+ * (No more in use from 2.x)
+ *
  * @author Andrianina OELIMAHEFASON
  */
 class JobMaker extends AbstractJobMaker{

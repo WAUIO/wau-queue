@@ -6,6 +6,7 @@ use PhpAmqpLib\Channel\AMQPChannel;
 use WAUQueue\Contracts\ClosableInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\ObservableInterface;
+use WAUQueue\Helpers\CollectionSet;
 use WAUQueue\Worker;
 
 class Channel implements ObservableInterface, ClosableInterface
@@ -62,22 +63,23 @@ class Channel implements ObservableInterface, ClosableInterface
      */
     public function consume(Worker $worker) {
         $channel = $this->get();
-        print_r("Waiting for messages...\n");
+        print_r("Waiting for messages (Ctrl + C to exit)...\n");
         
-        $worker->behave($this);
         
-        $worker->getQueues()->each(function(QueueInterface $queue, $name, AMQPChannel $channel) use($worker){
-            $channel->basic_consume($name,
-                $worker->prop('consumer_tag', ''),
-                $worker->prop('no_local', false),
-                $worker->prop('no_ack', false),
-                $worker->prop('exclusive', false),
-                $worker->prop('nowait', false),
-                $worker->getCallback(),
-                $worker->prop('ticket'),
-                $worker->prop('arguments')
+        if ($worker->prop('prefetch.size', 0 ) > 0 || $worker->prop('prefetch.count', 0) > 0) {
+            $channel->basic_qos(
+                $worker->prop('prefetch.size', null),
+                $worker->prop('prefetch.count', 1),
+                null
             );
-        }, $channel);
+            print_r("== Prefetch [size={$worker->prop('prefetch.size', 'NULL')}, count={$worker->prop('prefetch.count', 1)}]\n");
+        }
+        
+        $worker->applySetup($this);
+        
+        $worker->getConsumers()->each(function(Consumer $consumer){
+            $consumer->consume();
+        });
         
         while(count($channel->callbacks)) {
             $channel->wait();

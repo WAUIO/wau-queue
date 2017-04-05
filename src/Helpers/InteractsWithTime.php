@@ -1,4 +1,4 @@
-<?php namespace WAUQueue;
+<?php namespace WAUQueue\Helpers;
 
 use DateTimeInterface;
 

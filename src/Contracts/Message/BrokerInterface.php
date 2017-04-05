@@ -1,6 +1,9 @@
 <?php namespace WAUQueue\Contracts\Message;
 
 
+use WAUQueue\Contracts\Client\ConsumerInterface;
+use WAUQueue\Contracts\Client\WorkerInterface;
+
 interface BrokerInterface
 {
     /**
@@ -27,4 +30,14 @@ interface BrokerInterface
      * @return array
      */
     public function getQueues();
+    
+    /**
+     * Add a new consumer on a worker
+     *
+     * @param \WAUQueue\Contracts\Client\WorkerInterface $worker
+     * @param \WAUQueue\Contracts\Message\QueueInterface $queue
+     *
+     * @return mixed
+     */
+    public function add(WorkerInterface $worker, QueueInterface $queue);
 }

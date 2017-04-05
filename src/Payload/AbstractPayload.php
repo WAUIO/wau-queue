@@ -33,7 +33,9 @@ abstract class AbstractPayload implements MessageInterface
         $this->properties = $config;
     }
     
-    public abstract function raw();
+    public function raw() {
+        return $this->payload;
+    }
     
     public function getConfig() {
         return $this->properties;

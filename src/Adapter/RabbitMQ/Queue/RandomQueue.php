@@ -9,6 +9,6 @@ class RandomQueue extends NamedQueue
     protected $autoCreated = true;
     
     public function __construct(Channel $channel, array $config) {
-        parent::__construct($channel, $config, '');
+        parent::__construct($channel, $config, $this->array_get($config, '__prefix', '') . md5(uniqid() . microtime(true)));
     }
 }

@@ -1,8 +1,13 @@
-<?php
+<?php namespace WAUQueue\Contracts\Job;
 
-
-namespace WAUQueue\Contracts\Job;
-
+/**
+ * Interface InterfaceJobMaker
+ *
+ * @deprecated
+ * (No more in use in 2.x)
+ *
+ * @package WAUQueue\Contracts\Job
+ */
 interface InterfaceJobMaker {
     
     /**

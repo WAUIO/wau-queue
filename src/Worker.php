@@ -25,6 +25,13 @@ class Worker implements WorkerInterface
     protected $broker;
     
     /**
+     * Callback to execute for each entry on the queue
+     *
+     * @var callable
+     */
+    protected $callback;
+    
+    /**
      * QueueInterface set of all declared ones
      *
      * @var CollectionSet
@@ -32,21 +39,59 @@ class Worker implements WorkerInterface
     protected $queues;
     
     /**
+     * Consumers who consume on the current worker
+     *
+     * @var CollectionSet
+     */
+    protected $consumers;
+    
+    /**
      * @var callable
      */
-    protected $behavior;
+    protected $setup;
     
     public function __construct(BrokerInterface $broker) {
         $this->broker = $broker;
         $this->queues = new CollectionSet($broker->getQueues());
+        
+        $this->setConsumers();
     }
     
     /**
-     * Callback to execute for each entry on the queue
+     * Register the set of consumers to the current worker
      *
-     * @var callable
+     * @return $this
      */
-    protected $callback;
+    protected function setConsumers() {
+        $this->consumers = new CollectionSet();
+        $this->queues->each(function(QueueInterface $queue){
+            $this->consumers->push($this->broker->add($this, $queue));
+        });
+        
+        return $this;
+    }
+    
+    /**
+     * Set the prefetch size
+     *
+     * @param $size
+     *
+     * @return $this
+     */
+    public function prefetchSize($size) {
+        return $this->setProperty('prefetch.size', intval($size));
+    }
+    
+    /**
+     * Set the prefetch count
+     *
+     * @param $count
+     *
+     * @return $this
+     */
+    public function prefetch($count) {
+        return $this->setProperty('prefetch.count', intval($count));
+    }
     
     /**
      * @param callable $callback
@@ -62,15 +107,17 @@ class Worker implements WorkerInterface
     /**
      * @return callable
      */
-    public function getCallback(){
+    public function getCallback() {
         return $this->callback;
     }
     
     /**
-     * @param callable $behavior
+     * Setup the worker, register callback to modify channel object
+     *
+     * @param callable $setup
      */
-    public function setBehavior(callable $behavior) {
-        $this->behavior = $behavior;
+    public function setup(callable $setup) {
+        $this->setup = $setup;
     }
     
     /**
@@ -78,8 +125,9 @@ class Worker implements WorkerInterface
      *
      * @param ObservableInterface $channel
      */
-    public function behave(ObservableInterface $channel) {
-        call_user_func($this->behavior, $channel);
+    public function applySetup(ObservableInterface $channel) {
+        if(is_callable($this->setup))
+            call_user_func($this->setup, $channel);
     }
     
     /**
@@ -96,5 +144,12 @@ class Worker implements WorkerInterface
      */
     public function getQueues() {
         return $this->queues;
+    }
+    
+    /**
+     * @return CollectionSet
+     */
+    public function getConsumers() {
+        return $this->consumers;
     }
 }

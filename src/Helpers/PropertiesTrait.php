@@ -40,4 +40,13 @@ trait PropertiesTrait
         return array_key_exists($key, $this->properties)
             ? $this->properties[ $key ] : $default;
     }
+    
+    /**
+     * Get all properties value
+     *
+     * @return array
+     */
+    public function props() {
+        return $this->properties;
+    }
 }

@@ -22,6 +22,30 @@ class CollectionSet implements \IteratorAggregate, \ArrayAccess
         return new self(array_map($function, $this->dataset));
     }
     
+    public function push($item, $key = null) {
+        if(is_null($key)) {
+            $this->dataset[] = $item;
+        } else $this->array_set($this->dataset, $key, $item);
+        
+        return $this;
+    }
+    
+    public function filter(callable $filter) {
+        return new self(
+            array_filter($this->dataset, $filter)
+        );
+    }
+    
+    public function values(){
+        return new self(
+            array_values($this->dataset)
+        );
+    }
+    
+    public function get($key){
+        return $this->offsetGet($key);
+    }
+    
     //------------------- Interface method -------------------//
     public function getIterator() {
         return new \ArrayIterator($this->dataset);

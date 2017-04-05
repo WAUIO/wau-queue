@@ -8,6 +8,14 @@ use League\Pipeline\Pipeline;
 use WAUQueue\Contracts\AbstractStagePipeline;
 use WAUQueue\Contracts\Job\JobMaker;
 
+/**
+ * Class RabbitMQWorker
+ *
+ * @deprecated
+ * (No more in use from 2.x)
+ *
+ * @package WAUQueue
+ */
 class RabbitMQWorker implements IWorker {
     
     use Helpers\PayloadTrait;

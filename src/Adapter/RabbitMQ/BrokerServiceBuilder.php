@@ -3,6 +3,8 @@
 
 use PhpAmqpLib\Message\AMQPMessage;
 use WAUQueue\Adapter\RabbitMQ\Exchange\BasicExchange;
+use WAUQueue\Contracts\Client\ConsumerInterface;
+use WAUQueue\Contracts\Client\WorkerInterface;
 use WAUQueue\Contracts\ClosableInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\Message\BrokerAbstract;
@@ -141,6 +143,16 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
      */
     public function getQueues() {
         return $this->queues;
+    }
+    
+    /**
+     * @inheritdoc
+     */
+    public function add(WorkerInterface $worker, QueueInterface $queue) {
+        $consumer = new Consumer($worker, $this->channel(), $this->prop('consumer.strategy', []));
+        $consumer->listenTo($queue);
+        
+        return $consumer;
     }
     
     /**

@@ -4,10 +4,11 @@
 use WAUQueue\Adapter\RabbitMQ\Channel;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Helpers\PropertiesTrait;
+use WAUQueue\Helpers\Utilities;
 
 class NamedQueue implements QueueInterface
 {
-    use PropertiesTrait;
+    use PropertiesTrait, Utilities;
     
     /**
      * @var Channel
@@ -54,6 +55,10 @@ class NamedQueue implements QueueInterface
             $this->prop('arguments'),
             $this->prop('ticket')
         );
+    }
+    
+    public function getInfo() {
+        return $this->createWithConfig();
     }
     
     public function getName() {

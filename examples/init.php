@@ -7,14 +7,6 @@ use WAUQueue\Adapter\RabbitMQ\Exchange\DirectExchange;
 use WAUQueue\Adapter\RabbitMQ\BrokerServiceBuilder;
 use WAUQueue\Adapter\RabbitMQ\Connector;
 
-$severities = array_slice($argv, 1);
-if (empty($severities)) {
-    file_put_contents('php://stderr',
-        "Usage: $argv[0] [info] [warning] [error]\n"
-    );
-    exit(1);
-}
-
 $bus = new BrokerServiceBuilder(
     new Connector(array(
         'host'     => 'localhost',

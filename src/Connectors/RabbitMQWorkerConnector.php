@@ -7,6 +7,9 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 /**
  * Description of RabbitMQWorkerConnctor
  *
+ * @deprecated
+ * (No more in use on 2.x)
+ *
  * @author Andrianina OELIMAHEFASON
  */
 class RabbitMQWorkerConnector implements ConnectorInterface, Factory {

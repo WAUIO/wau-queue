@@ -11,6 +11,9 @@ use WAUQueue\Contracts\QueueInterface;
 /**
  * Description of Queue
  *
+ * @deprecated
+ * (No more in use on 2.x)
+ *
  * @author Andrianina OELIMAHEFASON
  */
 abstract class Queue implements QueueInterface {

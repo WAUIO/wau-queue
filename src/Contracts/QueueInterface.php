@@ -1,7 +1,14 @@
-<?php
+<?php namespace WAUQueue\Contracts;
 
-namespace WAUQueue\Contracts;
 
+/**
+ * Interface QueueInterface
+ *
+ * @deprecated
+ * (No more in use on 2.x)
+ *
+ * @package WAUQueue\Contracts
+ */
 interface QueueInterface {
 
 	/**

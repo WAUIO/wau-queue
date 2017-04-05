@@ -1,15 +1,21 @@
 <?php namespace WAUQueue\Adapter\RabbitMQ\Exchange;
 
 
+use WAUQueue\Adapter\RabbitMQ\Channel;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Helpers\PropertiesTrait;
 
+/**
+ * Class BasicExchange
+ *
+ * @package WAUQueue\Adapter\RabbitMQ\Exchange
+ */
 class BasicExchange
 {
     use PropertiesTrait;
     
     /**
-     * @var \WAUQueue\Adapter\RabbitMQ\Channel
+     * @var Channel
      */
     protected $channel;
     
@@ -41,11 +47,11 @@ class BasicExchange
     /**
      * Bind a routing key to a specific queue
      *
-     * @param \WAUQueue\Contracts\Message\QueueInterface $queue
-     * @param string                                     $routingKey
-     * @param bool                                       $nowait
-     * @param null                                       $arguments
-     * @param null                                       $ticket
+     * @param QueueInterface $queue
+     * @param string         $routingKey
+     * @param bool           $nowait
+     * @param null           $arguments
+     * @param null           $ticket
      */
     public function bind(QueueInterface $queue, $routingKey = '', $nowait = false, $arguments = null, $ticket = null) {
         if(is_array($routingKey)) {
