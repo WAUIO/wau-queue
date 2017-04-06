@@ -11,6 +11,7 @@ $bus = new BrokerServiceBuilder(
     new Connector(array(
         'host'     => 'localhost',
         'port'     => 5672,
+        'port.api' => 15672,
         'user'     => 'guest',
         'password' => 'guest',
         'vhost'    => 'portal',

@@ -140,7 +140,7 @@ abstract class ConsumerAbstract implements ConsumerInterface
     public function consume(array $strategy = array()) {
         // try to find a callback on the queue object first
         if(!$this->callback) {
-            $callback = $this->queue->prop('__job', $this->prop('__job'));
+            $callback = $this->queue->prop('__.job', $this->prop('__.job'));
             if (is_callable($callback)) {
                 $this->setCallback($callback);
             } elseif (is_string($callback)) {
@@ -166,5 +166,5 @@ abstract class ConsumerAbstract implements ConsumerInterface
      */
     protected abstract function swallow(array $strategy = array());
     
-    protected abstract function stop();
+    public abstract function stop();
 }

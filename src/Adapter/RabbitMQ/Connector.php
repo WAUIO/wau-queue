@@ -2,6 +2,7 @@
 
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
+use WAUQueue\Adapter\RabbitMQ\Rest\RabbitMQRest;
 use WAUQueue\Connectors\ConnectorInterface;
 use WAUQueue\Contracts\ClosableInterface;
 use WAUQueue\Exception\ConnectionError;
@@ -60,6 +61,14 @@ class Connector implements ConnectorInterface, ClosableInterface
                     $this->prop('context'),
                     $this->prop('keep_alive', false),
                     $this->prop('heartbeat', 0)
+                );
+                
+                // setup Rest API Provider, only port is changed
+                RabbitMQRest::setup(
+                    $this->prop('host'),
+                    $this->prop('port.api'),
+                    $this->prop('user'),
+                    $this->prop('password')
                 );
                 
                 $this->connected = true;

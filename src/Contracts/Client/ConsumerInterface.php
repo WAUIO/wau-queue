@@ -14,7 +14,7 @@ interface ConsumerInterface
     
     /**
      * Interupt consumption
-     * 
+     *
      * @return mixed
      */
     public function stop();

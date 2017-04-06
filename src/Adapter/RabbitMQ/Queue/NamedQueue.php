@@ -2,6 +2,7 @@
 
 
 use WAUQueue\Adapter\RabbitMQ\Channel;
+use WAUQueue\Adapter\RabbitMQ\Rest\Resource\Queue as QueueRest;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Helpers\PropertiesTrait;
 use WAUQueue\Helpers\Utilities;
@@ -16,6 +17,8 @@ class NamedQueue implements QueueInterface
     protected $channel;
     
     protected $autoCreated = false;
+    
+    public $info;
     
     public function __construct(Channel $channel, array $config, $name = '') {
         $this->channel    = $channel;
@@ -37,6 +40,8 @@ class NamedQueue implements QueueInterface
         } else {
             $this->createWithConfig();
         }
+        
+        $this->info = QueueRest::retrieve($this->prop('__.vhost', ''), $this->prop('name'));
     }
     
     /**
@@ -57,8 +62,8 @@ class NamedQueue implements QueueInterface
         );
     }
     
-    public function getInfo() {
-        return $this->createWithConfig();
+    public function status() {
+        return QueueRest::retrieve($this->prop('__.vhost', ''), $this->prop('name'));
     }
     
     public function getName() {

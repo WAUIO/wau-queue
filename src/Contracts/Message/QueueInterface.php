@@ -5,7 +5,7 @@ interface QueueInterface
 {
     public function getName();
     
-    public function getInfo();
+    public function status();
     
     public function prop($key, $defaut = null);
 }

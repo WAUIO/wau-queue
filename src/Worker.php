@@ -13,6 +13,7 @@ use WAUQueue\Helpers\CollectionSet;
 use WAUQueue\Helpers\PropertiesTrait;
 use WAUQueue\Module\ModulableInterface;
 use WAUQueue\Module\ModulableHelperTrait;
+use WAUQueue\Module\ModuleInterface;
 
 /**
  * Class Worker
@@ -68,13 +69,20 @@ class Worker implements WorkerInterface, ModulableInterface, ConsumersSupportInt
         return array(
             'properties' => $this->props(),
             'queues'     => $this->queues->map(function(QueueInterface $queue) {
-                return $queue->getName();
+                $json = $queue->status()->json;
+                return array(
+                    'messages' => $json->messages,
+                    'consumers' => $json->consumers,
+                    'details' => array_map(function($cs){
+                        return array($cs->consumer_tag, $cs->channel_details->name);
+                    }, isset($json->consumer_details) ? $json->consumer_details : []),
+                );
             })->toArray(),
             'consumers'  => $this->consumers->map(function(ConsumerAbstract $consumer) {
                 return $consumer->tag;
             })->toArray(),
-            'modules'    => $this->modules->map(function(ModulableInterface $modulable) {
-                return get_class($modulable);
+            'modules'    => $this->modules->map(function(ModuleInterface $module) {
+                return get_class($module);
             })->toArray()
         );
     }
