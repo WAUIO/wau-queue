@@ -160,6 +160,19 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
     }
     
     /**
+     * @inheritdoc
+     */
+    public function remove($consumerTag, $nowait = false) {
+        try {
+            $this->channel()->get()->basic_cancel($consumerTag, $nowait);
+            
+            return true;
+        }catch (\Exception $e){
+            return false;
+        }
+    }
+    
+    /**
      * Get the instanciated Observable Channel object
      *
      * @return Channel

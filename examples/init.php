@@ -20,7 +20,7 @@ $bus = new BrokerServiceBuilder(
 
 $exchange = $bus->setExchange(
     new DirectExchange($bus->channel(), [
-        'name'        => 'direct_logs',
+        'name'        => 'portal.main',
         'passive'     => false,
         'durable'     => false,
         'auto_delete' => false,

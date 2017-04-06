@@ -46,6 +46,50 @@ class CollectionSet implements \IteratorAggregate, \ArrayAccess
         return $this->offsetGet($key);
     }
     
+    public function last() {
+        return $this->count() > 0 ? $this->get($this->count() - 1) : null;
+    }
+    
+    public function first() {
+        return $this->count() > 0 ? $this->values()->get(0) : null;
+    }
+    
+    public function where($key, $value) {
+        return $this->filter(function($item) use($key, $value){
+            return $this->dataValue($item, $key) == $value;
+        });
+    }
+    
+    public function whereNot($key, $value) {
+        return $this->filter(function($item) use($key, $value){
+            return $this->dataValue($item, $key) != $value;
+        });
+    }
+    
+    public function groupBy($key){
+        $temp = array();
+        
+        $groups = array_unique(array_map(function($item) use($key){
+            return $this->dataValue($item, $key);
+        }, $this->dataset));
+    
+        foreach ($groups as $group) {
+            $temp[$group] = new self(array_filter($this->dataset, function($item) use($key, $group){
+                return $group == $this->dataValue($item, $key);
+            }));
+        }
+        
+        return new self($temp);
+    }
+    
+    protected function dataValue($item, $key) {
+        return is_array($item) ? $this->array_get($item, $key) : (is_object($item) ? $this->object_get($item, $key) : $item);
+    }
+    
+    public function count(){
+        return count($this->dataset);
+    }
+    
     //------------------- Interface method -------------------//
     public function getIterator() {
         return new \ArrayIterator($this->dataset);

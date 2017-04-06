@@ -2,12 +2,9 @@
 
 
 use WAUQueue\Helpers\CollectionSet;
-use WAUQueue\Helpers\Utilities;
 
 trait ModulableHelperTrait
 {
-    use Utilities;
-    
     /**
      * @var \WAUQueue\Helpers\CollectionSet
      */
@@ -21,7 +18,9 @@ trait ModulableHelperTrait
      * @return $this
      */
     protected function initModules($modules = array()) {
-        $this->init_class_property($this, 'modules', new CollectionSet());
+        if (!$this->modules) {
+            $this->modules = new CollectionSet();
+        }
     
         foreach ($modules as $module) {
             $this->addModule($module);

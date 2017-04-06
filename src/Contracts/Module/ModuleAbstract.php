@@ -1,5 +1,7 @@
 <?php namespace WAUQueue\Contracts\Module;
 
+use WAUQueue\Helpers\BashOutput\BashOutputAbilityTrait;
+
 
 /**
  * Class ModuleAbstract
@@ -8,7 +10,7 @@
  */
 class ModuleAbstract implements ModuleInterface
 {
-    use ModulableHelperTrait;
+    use ModulableHelperTrait, BashOutputAbilityTrait;
     
     /**
      * The object where the module is implemented

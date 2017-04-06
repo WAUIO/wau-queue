@@ -29,6 +29,7 @@ trait BashOutputAbilityTrait
         $this->setStyle('warning', new BashStyle('43', '0;31'));
         $this->setStyle('info', new BashStyle('', '0;32'));
         $this->setStyle('alert', new BashStyle('', '0;34'));
+        $this->setStyle('highlight', new BashStyle('40', '1;37'));
         
         return $this;
     }
@@ -39,11 +40,11 @@ trait BashOutputAbilityTrait
         if(is_null($style)) $style = $this->defaultStyle;
         
         $style = !is_null($style) ? $this->styles->get($style) : new BashStyle('', '');
-        $this->writeln($style->color($text));
+        $this->writeln($style->color("{$this->prefix}{$text}"));
     }
     
     public function write($text) {
-        print_r("{$this->prefix}{$text}");
+        print_r("{$text}");
     }
     
     public function writeln($text) {

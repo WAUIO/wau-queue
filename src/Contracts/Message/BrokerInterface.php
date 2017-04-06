@@ -43,4 +43,24 @@ interface BrokerInterface
      * @return mixed
      */
     public function add(WorkerInterface $worker, QueueInterface $queue, ConsumersSupportInterface &$support);
+    
+    /**
+     * Remove a consumer from channel
+     *
+     * @param string $consumerTag
+     * @param bool   $nowait
+     *
+     * @return mixed
+     */
+    public function remove($consumerTag, $nowait = false);
+    
+    /**
+     * Get object property
+     *
+     * @param      $key
+     * @param null $default
+     *
+     * @return mixed
+     */
+    public function prop($key, $default = null);
 }

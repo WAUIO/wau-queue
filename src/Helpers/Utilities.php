@@ -72,6 +72,23 @@ trait Utilities
         return $array;
     }
     
+    public function object_get($object, $key, $default = null)
+    {
+        if (is_null($key) || trim($key) == '') {
+            return $object;
+        }
+    
+        foreach (explode('.', $key) as $segment) {
+            if (! is_object($object) || ! isset($object->{$segment})) {
+                return value($default);
+            }
+        
+            $object = $object->{$segment};
+        }
+    
+        return $object;
+    }
+    
     public function init_class_property($object, $property, $initialValue) {
         if(!$object->{$property}){
             $object->{$property} = $initialValue;
