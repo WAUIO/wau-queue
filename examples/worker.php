@@ -21,13 +21,15 @@ abstract class DefaultJob extends AbstractJob
         $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
         
         list($queueId, $mc, $cc) = $this->queue->getInfo();
-    
+        
         if($mc > 10 && $cc < 10) {
             print_r("**** Need new consumer for less charge\n");
-            $bus->add($this->worker, $this->queue)
+            $bus->add($this->worker, $this->queue, $this->worker)
                 ->setJob(get_called_class())
                 ->consume($bus->prop('consumer.strategy', []))
             ;
+        } elseif($mc < 10 && $cc > 2) {
+        
         }
         
         print_r(array(
@@ -36,6 +38,9 @@ abstract class DefaultJob extends AbstractJob
                 'count.consumers' => $cc,
             )
         ));
+        
+        print_r($this->worker->status());
+        //print_r($this->queue);
     }
     
 }
@@ -43,6 +48,10 @@ abstract class DefaultJob extends AbstractJob
 class ErrorJob extends DefaultJob { protected $defaultStyle = 'error'; }
 class WarningJob extends DefaultJob { protected $defaultStyle = 'warning'; }
 class InfoJob extends DefaultJob { protected $defaultStyle = 'info'; }
+
+class ExampleModule implements \WAUQueue\Module\ModuleInterface {
+
+}
 
 $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
@@ -58,6 +67,7 @@ $bus->bind($exchange,
     ], 'logs.errors'), 'error'
 );
 
+/*
 $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
         '__prefix'    => 'logs.',
@@ -71,6 +81,7 @@ $bus->bind($exchange,
         )),
     ], 'logs.warnings'), 'warning'
 );
+*/
 
 $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
@@ -91,6 +102,6 @@ $bus->setProperty('consumer.strategy', array(
 ));
 
 $worker = new Worker($bus);
-$worker->prefetch(1);
+$worker->prefetch(2);
 
 $worker->listen($bus->channel());

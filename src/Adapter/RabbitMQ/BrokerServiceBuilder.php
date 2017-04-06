@@ -6,12 +6,14 @@ use WAUQueue\Adapter\RabbitMQ\Exchange\BasicExchange;
 use WAUQueue\Contracts\Client\ConsumerInterface;
 use WAUQueue\Contracts\Client\WorkerInterface;
 use WAUQueue\Contracts\ClosableInterface;
+use WAUQueue\Contracts\ConsumersSupportInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\Message\BrokerAbstract;
 use WAUQueue\Contracts\Message\BrokerInterface;
 use WAUQueue\Contracts\Message\MessageInterface;
 use WAUQueue\Contracts\ObservableInterface;
 use WAUQueue\Exception\ConcurrentQueueError;
+use WAUQueue\Helpers\CollectionSet;
 use WAUQueue\Worker;
 
 class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, ObservableInterface, ClosableInterface
@@ -148,9 +150,11 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
     /**
      * @inheritdoc
      */
-    public function add(WorkerInterface $worker, QueueInterface $queue) {
+    public function add(WorkerInterface $worker, QueueInterface $queue, ConsumersSupportInterface &$support) {
         $consumer = new Consumer($worker, $this->channel(), $this->prop('consumer.strategy', []));
         $consumer->listenTo($queue);
+    
+        $support->pushConsumer($consumer);
         
         return $consumer;
     }

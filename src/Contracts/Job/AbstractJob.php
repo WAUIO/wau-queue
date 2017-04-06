@@ -5,6 +5,7 @@ use WAUQueue\Contracts\Client\WorkerInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\ObservableInterface;
 use WAUQueue\Helpers\BashOutput\BashOutputAbilityTrait;
+use WAUQueue\Worker;
 
 /**
  * Description of JobAbstract
@@ -36,7 +37,7 @@ abstract class AbstractJob implements InterfaceJob
      */
     protected $queue;
     
-    public function __construct(WorkerInterface $worker, ObservableInterface $channel, QueueInterface $queue) {
+    public function __construct(Worker $worker, ObservableInterface $channel, QueueInterface $queue) {
         $this->worker  = $worker;
         $this->channel = $channel;
         $this->queue   = $queue;

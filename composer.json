@@ -1,27 +1,31 @@
 {
-    "name": "wau/wau-queue",
-    "description": "Queue System",
-    "require": {
-        "php":">=5.6",
-        "php-amqplib/php-amqplib": "2.5.2",
-        "league/pipeline": "~0.2"
+  "name": "wau/wau-queue",
+  "description": "Queue System Library, can be adapted to all type of queuing system eg. RabbitMQ",
+  "require": {
+    "php": ">=5.6",
+    "php-amqplib/php-amqplib": "2.5.2",
+    "league/pipeline": "~0.2"
+  },
+  "authors": [
+    {
+      "name": "Andrianina OELIMAHEFASON",
+      "email": "andrianina@wau.solutions"
     },
-    "authors": [
-        {
-            "name": "Andrianina OELIMAHEFASON",
-            "email": "andrianina@wau.solutions"
-        }
-    ],
-    "minimum-stability": "dev",
-    "autoload":{
-        "psr-4":{
-            "WAUQueue\\" : "src/"
-        }
-    },
-    "repositories" : [
-        {
-            "type"  : "git",
-            "url"   : "https://github.com/thephpleague/pipeline.git"
-        }
-    ]
+    {
+      "name": "Irzhy Ranaivoarivony",
+      "email": "irzhy@wau.co"
+    }
+  ],
+  "minimum-stability": "dev",
+  "autoload": {
+    "psr-4": {
+      "WAUQueue\\": "src/"
+    }
+  },
+  "repositories": [
+    {
+      "type": "git",
+      "url": "https://github.com/thephpleague/pipeline.git"
+    }
+  ]
 }

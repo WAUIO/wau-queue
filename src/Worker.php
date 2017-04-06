@@ -1,12 +1,18 @@
 <?php namespace WAUQueue;
 
 
+use WAUQueue\Contracts\Client\ConsumerAbstract;
+use WAUQueue\Contracts\Client\ConsumerInterface;
+use WAUQueue\Contracts\Client\ConsumersSet;
 use WAUQueue\Contracts\Client\WorkerInterface;
+use WAUQueue\Contracts\ConsumersSupportInterface;
 use WAUQueue\Contracts\Message\BrokerInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\ObservableInterface;
 use WAUQueue\Helpers\CollectionSet;
 use WAUQueue\Helpers\PropertiesTrait;
+use WAUQueue\Module\ModulableInterface;
+use WAUQueue\Module\ModulableHelperTrait;
 
 /**
  * Class Worker
@@ -15,9 +21,9 @@ use WAUQueue\Helpers\PropertiesTrait;
  *
  * @package WAUQueue
  */
-class Worker implements WorkerInterface
+class Worker implements WorkerInterface, ModulableInterface, ConsumersSupportInterface
 {
-    use PropertiesTrait;
+    use PropertiesTrait, ModulableHelperTrait;
     
     /**
      * @var BrokerInterface
@@ -41,7 +47,7 @@ class Worker implements WorkerInterface
     /**
      * Consumers who consume on the current worker
      *
-     * @var CollectionSet
+     * @var ConsumersSet
      */
     protected $consumers;
     
@@ -50,11 +56,27 @@ class Worker implements WorkerInterface
      */
     protected $setup;
     
-    public function __construct(BrokerInterface $broker) {
+    public function __construct(BrokerInterface $broker, $modules = array()) {
         $this->broker = $broker;
         $this->queues = new CollectionSet($broker->getQueues());
         
+        $this->initModules($modules);
         $this->setConsumers();
+    }
+    
+    public function status() {
+        return array(
+            'properties' => $this->props(),
+            'queues'     => $this->queues->map(function(QueueInterface $queue) {
+                return $queue->getName();
+            })->toArray(),
+            'consumers'  => $this->consumers->map(function(ConsumerAbstract $consumer) {
+                return $consumer->tag;
+            })->toArray(),
+            'modules'    => $this->modules->map(function(ModulableInterface $modulable) {
+                return get_class($modulable);
+            })->toArray()
+        );
     }
     
     /**
@@ -63,10 +85,32 @@ class Worker implements WorkerInterface
      * @return $this
      */
     protected function setConsumers() {
-        $this->consumers = new CollectionSet();
+        $this->consumers = new ConsumersSet();
         $this->queues->each(function(QueueInterface $queue){
-            $this->consumers->push($this->broker->add($this, $queue));
+            $this->broker->add($this, $queue, $this->consumers);
         });
+        
+        return $this;
+    }
+    
+    /**
+     * @return \WAUQueue\Contracts\Client\ConsumersSet
+     */
+    public function allConsumers() {
+        if(!$this->consumers) $this->consumers = new ConsumersSet();
+        
+        return $this->consumers;
+    }
+    
+    /**
+     * @param \WAUQueue\Contracts\Client\ConsumerInterface $consumer
+     *
+     * @return $this
+     */
+    public function pushConsumer(ConsumerInterface $consumer) {
+        if(!$this->consumers) $this->consumers = new ConsumersSet();
+        
+        $this->consumers->push($consumer);
         
         return $this;
     }

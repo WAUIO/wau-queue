@@ -8,4 +8,6 @@ interface WorkerInterface
     public function listen(ObservableInterface $channel);
     
     public function setCallback(callable $callback);
+    
+    public function status();
 }

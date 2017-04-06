@@ -13,6 +13,13 @@ interface ConsumerInterface
     public function consume(array $strategy = array());
     
     /**
+     * Interupt consumption
+     * 
+     * @return mixed
+     */
+    public function stop();
+    
+    /**
      * Set the callback for the consumer
      *
      * @param callable $callback

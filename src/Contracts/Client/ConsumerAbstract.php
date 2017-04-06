@@ -43,7 +43,7 @@ abstract class ConsumerAbstract implements ConsumerInterface
      *
      * @var String
      */
-    protected $tag;
+    public $tag;
     
     /**
      * Name of JobInterface to run
@@ -131,15 +131,6 @@ abstract class ConsumerAbstract implements ConsumerInterface
     }
     
     /**
-     * Abstract method to implement for each Consumer type
-     *
-     * @param array $strategy
-     *
-     * @return mixed
-     */
-    protected abstract function swallow(array $strategy = array());
-    
-    /**
      * Prepare and send consumption job signal
      *
      * @param array $strategy
@@ -165,4 +156,15 @@ abstract class ConsumerAbstract implements ConsumerInterface
         
         return $this;
     }
+    
+    /**
+     * Abstract method to implement for each Consumer type
+     *
+     * @param array $strategy
+     *
+     * @return mixed
+     */
+    protected abstract function swallow(array $strategy = array());
+    
+    protected abstract function stop();
 }

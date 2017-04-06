@@ -43,4 +43,8 @@ class Consumer extends ConsumerAbstract
         
         return $this;
     }
+    
+    public function stop(){
+        $this->channel->channel()->get()->basic_cancel($this->tag);
+    }
 }

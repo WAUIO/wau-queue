@@ -2,7 +2,9 @@
 
 
 use WAUQueue\Contracts\Client\ConsumerInterface;
+use WAUQueue\Contracts\Client\ConsumersSet;
 use WAUQueue\Contracts\Client\WorkerInterface;
+use WAUQueue\Contracts\ConsumersSupportInterface;
 
 interface BrokerInterface
 {
@@ -34,10 +36,11 @@ interface BrokerInterface
     /**
      * Add a new consumer on a worker
      *
-     * @param \WAUQueue\Contracts\Client\WorkerInterface $worker
-     * @param \WAUQueue\Contracts\Message\QueueInterface $queue
+     * @param \WAUQueue\Contracts\Client\WorkerInterface    $worker
+     * @param \WAUQueue\Contracts\Message\QueueInterface    $queue
+     * @param \WAUQueue\Contracts\ConsumersSupportInterface $support
      *
      * @return mixed
      */
-    public function add(WorkerInterface $worker, QueueInterface $queue);
+    public function add(WorkerInterface $worker, QueueInterface $queue, ConsumersSupportInterface &$support);
 }

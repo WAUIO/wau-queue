@@ -21,12 +21,16 @@ class Channel implements ObservableInterface, ClosableInterface
      */
     protected $channel;
     
-    protected $isUnique = true;
+    protected $isUnique = false;
     
     public function __construct(AMQPStreamConnection $stream, $unique = true) {
         $this->stream   = $stream;
         $this->isUnique = $unique;
         $this->channel  = $this->get();
+    }
+    
+    public function create() {
+        return new self($this->stream, $this->isUnique);
     }
     
     public function channel() {
@@ -64,7 +68,6 @@ class Channel implements ObservableInterface, ClosableInterface
     public function consume(Worker $worker) {
         $channel = $this->get();
         print_r("Waiting for messages (Ctrl + C to exit)...\n");
-        
         
         if ($worker->prop('prefetch.size', 0 ) > 0 || $worker->prop('prefetch.count', 0) > 0) {
             $channel->basic_qos(
