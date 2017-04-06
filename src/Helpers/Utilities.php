@@ -71,6 +71,12 @@ trait Utilities
     
         return $array;
     }
+    
+    public function init_class_property($object, $property, $initialValue) {
+        if(!$object->{$property}){
+            $object->{$property} = $initialValue;
+        }
+    }
 }
 
 if(!function_exists('array_accessible')) {

@@ -11,9 +11,9 @@ use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\ObservableInterface;
 use WAUQueue\Helpers\CollectionSet;
 use WAUQueue\Helpers\PropertiesTrait;
-use WAUQueue\Module\ModulableInterface;
-use WAUQueue\Module\ModulableHelperTrait;
-use WAUQueue\Module\ModuleInterface;
+use WAUQueue\Contracts\Module\ModulableInterface;
+use WAUQueue\Contracts\Module\ModulableHelperTrait;
+use WAUQueue\Contracts\Module\ModuleInterface;
 
 /**
  * Class Worker
