@@ -2,25 +2,22 @@
 
 $bus = require_once __DIR__ . "/init.php";
 
-use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Wire\AMQPTable;
-use WAUQueue\Adapter\RabbitMQ\Channel;
 use WAUQueue\Adapter\RabbitMQ\Queue\RandomQueue;
 use WAUQueue\Adapter\RabbitMQ\Queue\NamedQueue;
-use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\Job\AbstractJob;
 use WAUQueue\Worker;
 
-class DefaultJob extends AbstractJob
+abstract class DefaultJob extends AbstractJob
 {
 
     public function fire($message) {
         global $bus;
         
-        $duration = rand(0, 2);
+        $duration = rand(0, 1);
         print_r("-----------------------------------------------------\nProcessing... wait {$duration} secs\n");
         sleep($duration);
-        echo '[' . date('Y-m-d H:i:s') . '][',$message->delivery_info['routing_key'], '] ', $message->body, "\n";
+        $this->output("[" . date('Y-m-d H:i:s') . "][{$message->delivery_info['routing_key']}] {$message->body}");
         $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
         
         list($queueId, $mc, $cc) = $this->queue->getInfo();
@@ -43,32 +40,50 @@ class DefaultJob extends AbstractJob
     
 }
 
+class ErrorJob extends DefaultJob { protected $defaultStyle = 'error'; }
+class WarningJob extends DefaultJob { protected $defaultStyle = 'warning'; }
+class InfoJob extends DefaultJob { protected $defaultStyle = 'info'; }
+
 $bus->bind($exchange,
-    new RandomQueue($bus->channel(), [
+    new NamedQueue($bus->channel(), [
         '__prefix'    => 'logs.',
-        '__job'       => 'DefaultJob',
+        '__job'       => 'ErrorJob',
         'passive'     => false,
         'durable'     => true,
-        'exclusive'   => false,
-        'auto_delete' => true,
+        'exclusive'   => true,
+        'auto_delete' => false,
         'arguments'   => new AMQPTable(array(
             'x-max-priority' => 10
         )),
-    ]), ['error', 'warning']
+    ], 'logs.errors'), 'error'
 );
 
 $bus->bind($exchange,
-    new RandomQueue($bus->channel(), [
+    new NamedQueue($bus->channel(), [
         '__prefix'    => 'logs.',
-        '__job'       => 'DefaultJob',
+        '__job'       => 'WarningJob',
         'passive'     => false,
         'durable'     => true,
-        'exclusive'   => false,
-        'auto_delete' => true,
+        'exclusive'   => true,
+        'auto_delete' => false,
         'arguments'   => new AMQPTable(array(
             'x-max-priority' => 10
         )),
-    ]), 'info'
+    ], 'logs.warnings'), 'warning'
+);
+
+$bus->bind($exchange,
+    new NamedQueue($bus->channel(), [
+        '__prefix'    => 'logs.',
+        '__job'       => 'InfoJob',
+        'passive'     => false,
+        'durable'     => true,
+        'exclusive'   => true,
+        'auto_delete' => false,
+        'arguments'   => new AMQPTable(array(
+            'x-max-priority' => 10
+        )),
+    ], 'logs.infos'), 'info'
 );
 
 $bus->setProperty('consumer.strategy', array(

@@ -4,6 +4,7 @@
 use WAUQueue\Contracts\Client\WorkerInterface;
 use WAUQueue\Contracts\Message\QueueInterface;
 use WAUQueue\Contracts\ObservableInterface;
+use WAUQueue\Helpers\BashOutput\BashOutputAbilityTrait;
 
 /**
  * Description of JobAbstract
@@ -12,6 +13,8 @@ use WAUQueue\Contracts\ObservableInterface;
  */
 abstract class AbstractJob implements InterfaceJob
 {
+    use BashOutputAbilityTrait;
+    
     /**
      * The current worker
      *
@@ -37,6 +40,8 @@ abstract class AbstractJob implements InterfaceJob
         $this->worker  = $worker;
         $this->channel = $channel;
         $this->queue   = $queue;
+        
+        $this->registerDefaultStyles();
     }
     
     /**
