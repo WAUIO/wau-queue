@@ -49,7 +49,8 @@ abstract class DefaultJob extends AbstractJob
         }
         
         print_r($this->worker->status());
-        $this->worker->module('ExampleModule@output', ["Rate Limit {$rateLimit}", "default"]);
+        $this->worker->module('ExampleModule@output', ["Rate Limit Remaining {$rateLimit}", "highlight"]);
+        $this->worker->module('WAUQueue\Module\RateLimitBalancer@balance', [$rateLimit]);
     }
     
 }
@@ -118,7 +119,8 @@ $bus->setProperty('consumer.strategy', array(
 ));
 
 $worker = new Worker($bus, array(
-    new ExampleModule()
+    new ExampleModule(),
+    new \WAUQueue\Module\RateLimitBalancer(500, 10),
 ));
 $worker->prefetch(2);
 
