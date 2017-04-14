@@ -71,6 +71,10 @@ class Connector implements ConnectorInterface, ClosableInterface
                     $this->prop('password')
                 );
                 
+                if(strpos($this->prop('host'), 'localhost') === false) {
+                    RabbitMQRest::useHttps();
+                }
+                
                 $this->connected = true;
             } catch (\Exception $e) {
                 throw new ConnectionError('Error while connecting to the remote AMQP service', 500, $e);

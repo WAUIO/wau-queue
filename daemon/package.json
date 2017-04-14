@@ -1,0 +1,17 @@
+{
+  "name": "wau-queue-daemon",
+  "version": "0.0.1",
+  "main": "cli.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Irzhy Ranaivoarivony",
+  "license": "ISC",
+  "description": "Daemon script which run a worker script, handle load balancer by spawing process",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "form-urlencoded": "^1.5.0",
+    "lodash-node": "^3.10.2"
+  }
+}

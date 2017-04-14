@@ -10,6 +10,8 @@ class RabbitMQRest
      */
     public static $http;
     
+    protected static $secureHttp = false;
+    
     public static $credentials = array(
         'host' => '',
         'port' => '',
@@ -38,6 +40,10 @@ class RabbitMQRest
         ));
     }
     
+    public static function useHttps($value = true) {
+        self::$secureHttp = $value;
+    }
+    
     /**
      * @param       $path
      * @param array $query
@@ -45,9 +51,11 @@ class RabbitMQRest
      * @return string
      */
     public static function url($path, $query = array()) {
-        return sprintf("http://%s:%s/%s?%s",
-            self::$credentials['host'],
-            self::$credentials['port'],
+        $protocol = "http" . (self::$secureHttp ? 's' : '');
+    
+        return sprintf("%s://%s:%s/%s?%s", $protocol,
+            self::$credentials[ 'host' ],
+            self::$credentials[ 'port' ],
             $path,
             http_build_query($query)
         );

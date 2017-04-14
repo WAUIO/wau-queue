@@ -11,6 +11,8 @@ class ConsumerPrefetchBalancer extends ModuleAbstract
 {
     use Utilities;
     
+    protected $pid = 1;
+    
     const MAX_LIMIT_LEVEL = 50;
     
     protected $level;
@@ -22,7 +24,7 @@ class ConsumerPrefetchBalancer extends ModuleAbstract
     protected $actions = array(
         'load.up'     => 'loadUp',
         'load.stable' => null,
-        'load.down'   => 'loadDown',
+        'load.down'   => null,
     );
     
     public function __construct($level, $up = 0, $down = 1) {
@@ -51,7 +53,7 @@ class ConsumerPrefetchBalancer extends ModuleAbstract
         }
         
         $action = $this->detectAction($json);
-        $this->output("[Action={$action}, Ready={$json->messages_ready}, Work={$json->messages}, Consumers={$json->consumers}, Queue={$queue->getName()}, Rate={$json->message_stats->ack_details->rate}%]", 'alert');
+        $this->output("[Action={$action}, Ready={$json->messages_ready}, Work={$json->messages}, Consumers={$json->consumers}, Queue={$queue->getName()}, Rate={$json->message_stats->ack_details->rate}%, Tag={$consumerTag}]", 'alert');
     
         // stop if the current consumer is not the master
         $masters = (new CollectionSet($queue->status()->json->consumer_details))->groupBy('channel_details.name')->map(function(CollectionSet $group){
@@ -86,6 +88,10 @@ class ConsumerPrefetchBalancer extends ModuleAbstract
     }
     
     protected function loadDown(BrokerInterface $broker, QueueInterface $queue, $job, $consumerTag) {
+
+    }
+    
+    protected function __loadDown(BrokerInterface $broker, QueueInterface $queue, $job, $consumerTag) {
         $consumers = (new CollectionSet($queue->status()->json->consumer_details))->whereNot('consumer_tag', $consumerTag);
         if($consumers->count() > 0) {
             $consumer = $consumers->first();
@@ -109,5 +115,10 @@ class ConsumerPrefetchBalancer extends ModuleAbstract
             return 'load.down';
         
         return 'load.stable';
+    }
+    
+    protected function kill($pid){
+        print_r("Killing process {$pid}\n");
+        return exec("kill -9 $pid");
     }
 }

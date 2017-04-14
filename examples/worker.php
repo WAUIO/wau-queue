@@ -1,5 +1,23 @@
 <?php
 
+/*
+$process = 1;
+
+do {
+    print_r("Current : PID=" . getmypid() . "\n");
+    $pid = pcntl_fork();
+    if($pid <= 0){
+        exit("is a child process\n");
+    }
+    
+    print_r("Processes : {$process}\n");
+    
+    $process++;
+    sleep(5);
+} while ($pid > 0 && $process < 5);
+exit("Stop\n");
+*/
+
 $bus = require_once __DIR__ . "/init.php";
 
 use PhpAmqpLib\Wire\AMQPTable;
@@ -12,7 +30,7 @@ abstract class DefaultJob extends AbstractJob
 {
 
     public function fire($message) {
-        global $bus;
+        global $bus, $argv;
     
         $duration = rand(0, 1);
         print_r("----------------------------------------------------------------------------------------------------------\nProcessing... wait {$duration} secs\n");
@@ -71,7 +89,7 @@ $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
         '__.prefix'    => 'logs.',
         '__.job'       => 'ErrorJob',
-        '__.vhost'       => 'portal',
+        '__.vhost'       => $config['vhost'],
         'passive'     => false,
         'durable'     => true,
         'exclusive'   => false,
@@ -86,7 +104,7 @@ $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
         '__.prefix'    => 'logs.',
         '__.job'       => 'WarningJob',
-        '__.vhost'       => 'portal',
+        '__.vhost'       => $config['vhost'],
         'passive'     => false,
         'durable'     => true,
         'exclusive'   => false,
@@ -101,7 +119,7 @@ $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
         '__.prefix'    => 'logs.',
         '__.job'       => 'InfoJob',
-        '__.vhost'       => 'portal',
+        '__.vhost'       => $config['vhost'],
         'passive'     => false,
         'durable'     => true,
         'exclusive'   => false,
