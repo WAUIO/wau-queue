@@ -1,14 +1,39 @@
 #!/usr/bin/env node
 
-const _       = require('lodash-node');
-const program = require('commander');
-const spawn   = require('child_process').spawn;
-const fs      = require('fs');
-const helper  = require('./helper');
-const rest    = require('./rabbitmq-rest/api');
+const program       = require('commander');
+const spawn         = require('child_process').spawn;
+const fs            = require('fs');
+const helper        = require('./helper');
+const rest          = require('./rabbitmq-rest/api');
+const processLoader = require('./process-loader');
 var child;
 
-rest.connect('localhost', 15672, 'guest', 'guest');
+/*
+var config = {
+    host    : 'penguin.rmq.cloudamqp.com',
+    port    : {
+        service: 5672,
+        api    : ''
+    },
+    user    : 'znnvkwxh',
+    password: 'qYtvFZGrMQPxOn1qfurY6jpl8sANBZvs',
+    vhost   : 'znnvkwxh'
+};
+*/
+
+var config = {
+    host    : 'localhost',
+    port    : {
+        service: 5672,
+        api    : 15672
+    },
+    user    : 'guest',
+    password: 'guest',
+    vhost   : 'portal'
+};
+
+rest.connect(config.host, config.port.api, config.user, config.password).secure();
+const vhost = config.vhost;
 
 program
     .version('0.0.1')
@@ -20,16 +45,26 @@ const errLog = fs.openSync('./storages/logs/errors.log', 'w');
 program
     .command('run <worker>')
     .description('Run a worker script, powered by php-cli')
+    .option('-l, --interval <n>', 'Loop interval (in sec)', parseInt)
     .option('-P, --prefetch <n>', 'Prefetch count', parseInt)
-    .option('-U, --level-up <n>', 'Load up level', parseInt)
-    .option('-D, --level-down <n>', 'Load down level', parseInt)
+    .option('-e, --eat <n>', 'EAT in seconds', parseInt)
     .action(function (worker, options) {
-        console.log('run "%s" using with options [Prefecth=%s, Level Up=%s, Level Down=%s]', worker, options.prefetch,
-            options.levelUp, options.levelDown);
 
-        var workers = [];
+        // default value
+        if (!options.interval)
+            options.interval = 1;
 
-        function addWorker(workers){
+        if (!options.eat)
+            options.eat = 30;
+
+        /*
+        if (!options.prefetch)
+            options.prefetch = 10;
+        */
+
+        console.log('run "%s" using with options [Prefecth=%s, EAT=%s secs]', worker, options.prefetch, options.eat);
+
+        function addWorker(workers) {
             workers.push(
                 spawn("/usr/bin/php", [worker], {
                     stdio: ['ignore', runLog, errLog]
@@ -38,56 +73,43 @@ program
             );
         }
 
-        addWorker(workers);
+        function subWorker(workers) {
+            if(workers.length > 1) {
+                //[*, x, *, *, ....]
+                var temp = workers.splice(1);
+                // kill the process
+                temp[0].kill();
 
-        if (options.prefetch) {
-            setInterval(function () {
-
-                console.log(">>>>>>>>> ", workers.length);
-
-                rest.get('/queues', {}, function (response, body) {
-                    if (body) {
-
-                        var status = _.map(body, function (queue) {
-                            return {
-                                messages : queue.messages_ready,
-                                consumers: queue.consumers,
-                                rates    : queue.messages_details.rate
-                            };
-                        }).reduce(function (result, value, key) {
-                            result.messages += parseInt(value.messages);
-                            result.consumers += parseInt(value.consumers);
-                            result.rates = (parseFloat(value.rates) + parseFloat(result.rates)) / (key ? 2 : 1);
-
-                            return result;
-                        }, {
-                            messages : 0,
-                            consumers: 0,
-                            rates    : 0
-                        });
-                        console.log("<<<<<<<<< STATUS >>>>>>>>> ", status);
-
-
-                        if (workers.length < options.prefetch) {
-                            addWorker(workers);
-                        }
-
-                    } else {
-                        //error
-                        console.error('Error')
-                    }
+                // remove the worker from list
+                temp.shift();
+                temp.forEach(function(w){
+                    workers.push(w);
                 });
-
-            }, 5000);
-
+                console.log("loadind down...", workers.length);
+            }
         }
 
+        addWorker(processLoader.workers);
+
+        setInterval(function () {
+
+            rest.get('/queues/' + vhost, {}, function (response, body) {
+                if (body) {
+                    processLoader.balance(body, options, addWorker, subWorker);
+                } else {
+                    //error
+                    console.error('** ERROR **')
+                }
+            });
+
+            console.log(">> Length", processLoader.workers.length);
+        }, parseInt(options.interval) * 1000);
 
     }).on('--help', function () {
     console.log('  Examples:');
     console.log();
-    console.log('    $ deploy exec sequential');
-    console.log('    $ deploy exec async');
+    console.log('    $ cli run /path/to/script.php');
+    console.log('    $ cli run /path/to/script.php -P 10 -U 20 -D 30');
     console.log();
 })
 ;

@@ -84,7 +84,7 @@ HttpClient.prototype = {
         });
 
         request.on('error', function (e) {
-            console.log('problem with request: ', e.message);
+            console.error('Client API Error: ', e.message, e);
         });
 
         // process the request

@@ -32,7 +32,7 @@ abstract class DefaultJob extends AbstractJob
     public function fire($message) {
         global $bus, $argv;
     
-        $duration = rand(0, 1);
+        $duration = rand(10, 20);
         print_r("----------------------------------------------------------------------------------------------------------\nProcessing... wait {$duration} secs\n");
         sleep($duration);
         
@@ -57,10 +57,13 @@ abstract class DefaultJob extends AbstractJob
         
         $this->output("[" . date('Y-m-d H:i:s') . "][{$message->delivery_info['routing_key']}] {$message->body}");
         
+        /*
         $body = json_decode($message->body);
         file_put_contents($storage . "/{$body->uid}.json", $message->body);
+        */
         
         $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
+        //log keen.io
         
         $rateLimit--;
         file_put_contents($rtFile, $rateLimit);
