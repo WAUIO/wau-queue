@@ -67,8 +67,8 @@ program
         function addWorker(workers) {
             workers.push(
                 spawn("/usr/bin/php", [worker], {
-                    stdio: ['ignore', runLog, errLog]
-                    //stdio: ['ignore', process.stdout, errLog]
+                    //stdio: ['ignore', runLog, errLog]
+                    stdio: ['ignore', process.stdout, errLog]
                 })
             );
         }

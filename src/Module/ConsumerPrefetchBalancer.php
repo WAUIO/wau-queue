@@ -52,15 +52,17 @@ class ConsumerPrefetchBalancer extends ModuleAbstract
             return;
         }
         
+        $rate = isset($json->message_stats->ack_details->rate) ? $json->message_stats->ack_details->rate : 0;
+        
         $action = $this->detectAction($json);
-        $this->output("[Action={$action}, Ready={$json->messages_ready}, Work={$json->messages}, Consumers={$json->consumers}, Queue={$queue->getName()}, Rate={$json->message_stats->ack_details->rate}%, Tag={$consumerTag}]", 'alert');
+        $this->output("[Action={$action}, Ready={$json->messages_ready}, Work={$json->messages}, Consumers={$json->consumers}, Queue={$queue->getName()}, Rate={$rate}%, Tag={$consumerTag}]", 'alert');
     
         // stop if the current consumer is not the master
         $masters = (new CollectionSet($queue->status()->json->consumer_details))->groupBy('channel_details.name')->map(function(CollectionSet $group){
             return $group->values()->last()->consumer_tag;
         });
         
-        print_r($masters->toArray());
+        //print_r($masters->toArray());
     
         if(!in_array($consumerTag, $masters->toArray()))
             return;

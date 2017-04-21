@@ -19,6 +19,7 @@ exit("Stop\n");
 */
 
 $bus = require_once __DIR__ . "/init.php";
+require __DIR__ . "/podio_init.php";
 
 use PhpAmqpLib\Wire\AMQPTable;
 use WAUQueue\Adapter\RabbitMQ\Queue\RandomQueue;
@@ -26,27 +27,16 @@ use WAUQueue\Adapter\RabbitMQ\Queue\NamedQueue;
 use WAUQueue\Contracts\Job\AbstractJob;
 use WAUQueue\Worker;
 
-abstract class DefaultJob extends AbstractJob
+abstract class PodioJob extends AbstractJob
 {
 
     public function fire($message) {
+        $time = microtime(true);
         global $bus, $argv;
     
-        $duration = rand(0, 1);
-        print_r("----------------------------------------------------------------------------------------------------------\nProcessing... wait {$duration} secs\n");
-        sleep($duration);
+        print_r("----------------------------------------------------------------------------------------------------------\n");
         
-        $storage = __DIR__ . "/../storages/events";
-        if(!is_dir($storage)){
-            mkdir($storage, 0777);
-        }
-    
-        $rtFile = __DIR__ . "/../storages/rate.limit";
-        if (!is_file($rtFile)) {
-            $rateLimit = 2000;
-        } else {
-            $rateLimit = intval(file_get_contents($rtFile));
-        }
+        $rateLimit = Podio::$last_response->headers['x-rate-limit-remaining'];
         
         $over = $this->worker->module('WAUQueue\Module\RateLimitBalancer@balance', [$rateLimit]);
         
@@ -58,25 +48,20 @@ abstract class DefaultJob extends AbstractJob
         
         $this->worker->module('WAUQueue\Module\ConsumerPrefetchBalancer@balance', [$bus, $this->queue, get_called_class(), $message->delivery_info['consumer_tag']]);
         
-        $this->output("[" . date('Y-m-d H:i:s') . "][{$message->delivery_info['routing_key']}] {$message->body}");
-        
-        /*
-        $body = json_decode($message->body);
-        file_put_contents($storage . "/{$body->uid}.json", $message->body);
-        */
+        $item = json_decode($message->body);
+        $item = PodioItem::get($item->item_id);
+    
+        $elapsed = microtime(true) - $time;
+        $this->output("[" . date('Y-m-d H:i:s') . "][{$message->delivery_info['routing_key']}] {$message->body}, Duration={$elapsed}");
         
         $message->delivery_info['channel']->basic_ack($message->delivery_info['delivery_tag']);
-        //log keen.io
-        
-        $rateLimit--;
-        file_put_contents($rtFile, $rateLimit);
     }
     
 }
 
-class ErrorJob extends DefaultJob { protected $defaultStyle = 'error'; }
-class WarningJob extends DefaultJob { protected $defaultStyle = 'warning'; }
-class InfoJob extends DefaultJob { protected $defaultStyle = 'info'; }
+class TaskJob extends PodioJob { protected $prefix = '[Podio.Task]';}
+class MediaJob extends PodioJob { protected $prefix = '[Podio.Media]'; }
+class CommentJob extends PodioJob { protected $prefix = '[Podio.Comment]'; }
 
 class ExampleModule extends \WAUQueue\Contracts\Module\ModuleAbstract {
     
@@ -93,8 +78,8 @@ class ExampleModule extends \WAUQueue\Contracts\Module\ModuleAbstract {
 
 $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
-        '__.prefix'    => 'logs.',
-        '__.job'       => 'ErrorJob',
+        '__.prefix'    => 'podio.',
+        '__.job'       => 'TaskJob',
         '__.vhost'       => $config['vhost'],
         'passive'     => false,
         'durable'     => true,
@@ -103,13 +88,13 @@ $bus->bind($exchange,
         'arguments'   => new AMQPTable(array(
             'x-max-priority' => 10
         )),
-    ], 'logs.errors'), 'error'
+    ], 'podio.task'), 'task'
 );
 
 $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
-        '__.prefix'    => 'logs.',
-        '__.job'       => 'WarningJob',
+        '__.prefix'    => 'podio.',
+        '__.job'       => 'MediaJob',
         '__.vhost'       => $config['vhost'],
         'passive'     => false,
         'durable'     => true,
@@ -118,13 +103,13 @@ $bus->bind($exchange,
         'arguments'   => new AMQPTable(array(
             'x-max-priority' => 10
         )),
-    ], 'logs.warnings'), 'warning'
+    ], 'podio.savemedia'), 'savemedia'
 );
 
 $bus->bind($exchange,
     new NamedQueue($bus->channel(), [
-        '__.prefix'    => 'logs.',
-        '__.job'       => 'InfoJob',
+        '__.prefix'    => 'podio.',
+        '__.job'       => 'CommentJob',
         '__.vhost'       => $config['vhost'],
         'passive'     => false,
         'durable'     => true,
@@ -133,7 +118,7 @@ $bus->bind($exchange,
         'arguments'   => new AMQPTable(array(
             'x-max-priority' => 10
         )),
-    ], 'logs.infos'), 'info'
+    ], 'podio.comment'), 'comment'
 );
 
 $bus->setProperty('consumer.strategy', array(
@@ -142,7 +127,7 @@ $bus->setProperty('consumer.strategy', array(
 
 $worker = new Worker($bus, array(
     new ExampleModule(),
-    new \WAUQueue\Module\RateLimitBalancer(2000, 10),
+    new \WAUQueue\Module\RateLimitBalancer(Podio::$last_response->headers['x-rate-limit-limit'], 10),
     new \WAUQueue\Module\ConsumerPrefetchBalancer('auto', 20, 10),
 ));
 $worker->prefetch(1);
