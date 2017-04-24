@@ -2,6 +2,7 @@
 
 
 use WAUQueue\Contracts\Module\ModuleAbstract;
+use WAUQueue\Helpers\BashOutput\BashOutputAbilityTrait;
 
 /**
  * Class RateLimitBalancer
