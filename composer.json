@@ -17,7 +17,6 @@
       "email": "irzhy@wau.co"
     }
   ],
-  "minimum-stability": "dev",
   "autoload": {
     "psr-4": {
       "WAUQueue\\": "src/"
