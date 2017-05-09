@@ -12,10 +12,11 @@ interface BrokerInterface
      * Recieve a message from a client per example
      *
      * @param \WAUQueue\Contracts\Message\MessageInterface $message
+     * @param string $exchangeName
      *
      * @return mixed
      */
-    public function pull(MessageInterface $message);
+    public function pull(MessageInterface $message, $exchangeName = "");
     
     /**
      * Get a specific queue object in the broker

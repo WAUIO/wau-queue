@@ -24,7 +24,7 @@ function loop(Publisher $publisher, $times) {
             'priority'            => $priority,
         ], ['routing' => $severity]);
         
-        $publisher->publish($message);
+        $publisher->publish($message, 'portal.main');
         
         echo " [x] Sent ", $severity, ':', $message->raw(), " \n";
     }

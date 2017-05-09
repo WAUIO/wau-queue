@@ -28,7 +28,7 @@ class Publisher implements PublisherInterface
      *
      * @param MessageInterface $message
      */
-    public function publish(MessageInterface $message) {
-        $this->server->pull($message);
+    public function publish(MessageInterface $message, $exchangeName = "") {
+        $this->server->pull($message, $exchangeName);
     }
 }

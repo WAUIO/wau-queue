@@ -32,7 +32,7 @@ foreach ($items as $item) {
         'priority'            => $priority,
     ], ['routing' => $task]);
     
-    $publisher->publish($message);
+    $publisher->publish($message, 'portal.main');
     
     echo " [x] Sent ", $task, ':', $message->raw(), " \n";
 }

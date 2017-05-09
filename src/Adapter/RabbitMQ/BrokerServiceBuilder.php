@@ -22,11 +22,11 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
      * @var ObservableInterface
      */
     protected $channel;
-    
+
     /**
-     * @var Exchange\BasicExchange
+     * @var array
      */
-    protected $exchange;
+    protected $exchange = [];
     
     /**
      * @var QueueInterface
@@ -48,7 +48,7 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
     /**
      * @inheritdoc
      */
-    public function pull(MessageInterface $message) {
+    public function pull(MessageInterface $message, $exchangeName = "") {
         // build the concrete message
         $concreteMessage = new AMQPMessage(
             $message->raw(),
@@ -56,8 +56,12 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
         );
         
         $config = $message->getConfig();
-        
-        $exchange = is_null($this->exchange) ? '' : $this->exchange->prop('name');
+
+        if($exchangeName === "" || empty($this->exchange) || !key_exists($exchangeName, $this->exchange)) {
+            $exchange = "";
+        } else {
+            $exchange = $this->exchange[$exchangeName]->prop('name');
+        }
         
         // send the message to the broker, precisely to exchange
         $this->channel()->get()->basic_publish($concreteMessage, $exchange,
@@ -74,9 +78,10 @@ class BrokerServiceBuilder extends BrokerAbstract implements BrokerInterface, Ob
      * @return BasicExchange
      */
     public function setExchange(BasicExchange $exchange) {
-        $this->exchange = $exchange;
+        $exchangeNAme =  $exchange->prop('name', "");
+        $this->exchange[$exchangeNAme] = $exchange;
         
-        return $this->exchange;
+        return $this->exchange[$exchangeNAme];
     }
     
     /**
