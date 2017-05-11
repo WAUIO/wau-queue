@@ -2,8 +2,8 @@
 
 require_once dirname(dirname(dirname(__FILE__))) . "/podio-php/PodioAPI.php";
 
-Podio::setup('develop-6bfobw', 'nJPjdqeD0wRVFAGOMHZacIZrK0FIycqQCo1hFpRMAg7TK2wBClFcc2wGlBt8wVYB');
+Podio::setup('CLIENT_ID', 'CLIENT_SECRET');
 Podio::authenticate('password', [
-    'username' => 'irzhy@wau.co',
-    'password' => 'passwau01_+',
+    'username' => 'email.mail.co',
+    'password' => 'your_password',
 ]);
