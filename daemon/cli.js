@@ -8,17 +8,28 @@ const rest          = require('./rabbitmq-rest/api');
 const processLoader = require('./process-loader');
 var child;
 
-var config = fs.readFileSync('./.config.json', {'encoding':'utf8'});
+var config = {
+    "host"    : process.env.QUEUE_HOST,
+    "port_api": process.env.QUEUE_API_PORT,
+    "user"    : process.env.QUEUE_USER,
+    "password": process.env.QUEUE_PASSWORD,
+    "vhost"   : process.env.QUEUE_VHOST
+};
 
-rest.connect(config.host, config.port.api, config.user, config.password).secure();
+rest.connect(config.host, config.port_api, config.user, config.password).secure();
 const vhost = config.vhost;
 
 program
     .version('0.0.1')
 ;
 
-const runLog = fs.openSync('./storages/logs/run.log', 'w');
-const errLog = fs.openSync('./storages/logs/errors.log', 'w');
+var runLog = process.stdout;
+var errLog = process.stdout;
+
+try {
+    runLog = fs.openSync('./storages/logs/run.log', 'w');
+    errLog = fs.openSync('./storages/logs/errors.log', 'w');
+} catch (e){}
 
 program
     .command('run <worker>')
@@ -46,7 +57,7 @@ program
             workers.push(
                 spawn("/usr/bin/php", [worker], {
                     //stdio: ['ignore', runLog, errLog]
-                    stdio: ['ignore', process.stdout, errLog]
+                    stdio: ['ignore', runLog, errLog]
                 })
             );
         }
