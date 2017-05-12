@@ -55,7 +55,7 @@ program
 
         function addWorker(workers) {
             workers.push(
-                spawn("/usr/bin/php", [worker], {
+                spawn(process.env.PHP_BIN || "/usr/bin/php", worker.split(' '), {
                     //stdio: ['ignore', runLog, errLog]
                     stdio: ['ignore', runLog, errLog]
                 })
