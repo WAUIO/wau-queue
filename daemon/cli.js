@@ -8,20 +8,7 @@ const rest          = require('./rabbitmq-rest/api');
 const processLoader = require('./process-loader');
 var child;
 
-/*
-var config = {
-    host    : 'penguin.rmq.cloudamqp.com',
-    port    : {
-        service: 5672,
-        api    : ''
-    },
-    user    : 'znnvkwxh',
-    password: 'qYtvFZGrMQPxOn1qfurY6jpl8sANBZvs',
-    vhost   : 'znnvkwxh'
-};
-*/
-
-var config = require('./.config.json');
+var config = fs.readFileSync('./.config.json', {'encoding':'utf8'});
 
 rest.connect(config.host, config.port.api, config.user, config.password).secure();
 const vhost = config.vhost;
