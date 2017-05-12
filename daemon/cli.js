@@ -21,16 +21,7 @@ var config = {
 };
 */
 
-var config = {
-    host    : 'localhost',
-    port    : {
-        service: 5672,
-        api    : 15672
-    },
-    user    : 'guest',
-    password: 'guest',
-    vhost   : 'portal'
-};
+var config = require('./.config.json');
 
 rest.connect(config.host, config.port.api, config.user, config.password).secure();
 const vhost = config.vhost;
@@ -93,16 +84,21 @@ program
 
         setInterval(function () {
 
-            rest.get('/queues/' + vhost, {}, function (response, body) {
-                if (body) {
-                    processLoader.balance(body, options, addWorker, subWorker);
-                } else {
-                    //error
-                    console.error('** ERROR **')
-                }
-            });
+            try {
+                rest.get('/queues/' + vhost, {}, function (response, body) {
+                    if (body) {
+                        processLoader.balance(body, options, addWorker, subWorker);
+                    } else {
+                        //error
+                        console.error('** ERROR **')
+                    }
+                });
 
-            console.log(">> Length", processLoader.workers.length);
+                console.log(">> Length", processLoader.workers.length);
+            } catch (e) {
+                console.error(e);
+            }
+
         }, parseInt(options.interval) * 1000);
 
     }).on('--help', function () {

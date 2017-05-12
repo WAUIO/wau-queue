@@ -18,7 +18,7 @@ $config = array(
     //'password' => 'qYtvFZGrMQPxOn1qfurY6jpl8sANBZvs',
     'password' => 'guest',
     //'vhost'    => 'znnvkwxh',
-    'vhost'    => '/',
+    'vhost'    => 'portal',
 );
 
 $bus = new BrokerServiceBuilder(
