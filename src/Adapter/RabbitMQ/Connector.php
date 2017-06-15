@@ -71,7 +71,7 @@ class Connector implements ConnectorInterface, ClosableInterface
                     $this->prop('password')
                 );
                 
-                if(strpos($this->prop('host'), 'localhost') === false) {
+                if(strpos($this->prop('host'), 'localhost') === false && $this->prop('https', false)) {
                     RabbitMQRest::useHttps();
                 }
                 
