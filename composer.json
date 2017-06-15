@@ -1,6 +1,6 @@
 {
   "name": "wau/wau-queue",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Queue System Library, can be adapted to all type of queuing system eg. RabbitMQ",
   "require": {
     "php": ">=5.6",
