@@ -120,7 +120,7 @@ class ConsumerPrefetchBalancer extends ModuleAbstract
     }
     
     protected function kill($pid){
-        print_r("Killing process {$pid}\n");
+        print("Killing process {$pid}\n");
         return exec("kill -9 $pid");
     }
 }

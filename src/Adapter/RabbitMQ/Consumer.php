@@ -39,7 +39,7 @@ class Consumer extends ConsumerAbstract
             $this->prop('arguments')
         );
 
-        print_r(". Consumer with tag {$this->tag} is listening to {$this->queue->getName()}...\n");
+        print(". Consumer with tag {$this->tag} is listening to {$this->queue->getName()}...\n");
         
         return $this;
     }

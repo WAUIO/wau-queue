@@ -67,7 +67,7 @@ class Channel implements ObservableInterface, ClosableInterface
      */
     public function consume(Worker $worker) {
         $channel = $this->get();
-        print_r("Waiting for messages (Ctrl + C to exit)...\n");
+        print("Waiting for messages (Ctrl + C to exit)...\n");
         
         if ($worker->prop('prefetch.size', 0 ) > 0 || $worker->prop('prefetch.count', 0) > 0) {
             $channel->basic_qos(
@@ -75,7 +75,7 @@ class Channel implements ObservableInterface, ClosableInterface
                 $worker->prop('prefetch.count', 1),
                 null
             );
-            print_r("== Prefetch [size={$worker->prop('prefetch.size', 'NULL')}, count={$worker->prop('prefetch.count', 1)}]\n");
+            print("== Prefetch [size={$worker->prop('prefetch.size', 'NULL')}, count={$worker->prop('prefetch.count', 1)}]\n");
         }
         
         $worker->applySetup($this);

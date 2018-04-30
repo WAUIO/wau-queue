@@ -44,7 +44,7 @@ trait BashOutputAbilityTrait
     }
     
     public function write($text) {
-        print_r("{$text}");
+        print("{$text}");
     }
     
     public function writeln($text) {
