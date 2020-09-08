@@ -21,7 +21,6 @@ exit("Stop\n");
 $bus = require_once __DIR__ . "/init.php";
 
 use PhpAmqpLib\Wire\AMQPTable;
-use WAUQueue\Adapter\RabbitMQ\Queue\RandomQueue;
 use WAUQueue\Adapter\RabbitMQ\Queue\NamedQueue;
 use WAUQueue\Contracts\Job\AbstractJob;
 use WAUQueue\Worker;

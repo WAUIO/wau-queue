@@ -41,7 +41,7 @@ class Connector implements ConnectorInterface, ClosableInterface
      * @inheritdoc
      */
     public function connect(array $config = array()) {
-        // new set of config, merged with the dataset on instanciation
+        // new set of config, merged with the dataset on instantiation
         $this->properties = array_merge($this->properties, $config);
         
         if (is_null($this->stream)) {
@@ -54,13 +54,14 @@ class Connector implements ConnectorInterface, ClosableInterface
                     $this->prop('vhost', '/'),
                     $this->prop('insist', false),
                     $this->prop('method', 'AMQPLAIN'),
-                    $this->prop('response'),
+                    $this->prop('response', null),
                     $this->prop('locale', 'en_US'),
                     $this->prop('connection_timeout', 3),
-                    $this->prop('rw_timeout', 3),
-                    $this->prop('context'),
+                    $this->prop('rw_timeout', 5),
+                    $this->prop('context', null),
                     $this->prop('keep_alive', false),
-                    $this->prop('heartbeat', 0)
+                    $this->prop('heartbeat', 20),
+                    $this->prop('channel_rpc_timeout', 0.0)
                 );
                 
                 // setup Rest API Provider, only port is changed
